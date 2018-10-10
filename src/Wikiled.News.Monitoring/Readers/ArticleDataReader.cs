@@ -10,11 +10,11 @@ namespace Wikiled.News.Monitoring.Readers
     {
         private readonly ILogger<ArticleDataReader> logger;
 
-        private readonly ICommentsReaderFactory commentsReaderFactory;
+        private readonly Func<ICommentsReader> commentsReaderFactory;
 
         private readonly IArticleTextReader articleTextReader;
 
-        public ArticleDataReader(ILoggerFactory loggerFactory, ICommentsReaderFactory commentsReaderFactory, IArticleTextReader articleTextReader)
+        public ArticleDataReader(ILoggerFactory loggerFactory, Func<ICommentsReader> commentsReaderFactory, IArticleTextReader articleTextReader)
         {
             logger = loggerFactory?.CreateLogger<ArticleDataReader>() ?? throw new ArgumentNullException(nameof(logger));
             this.commentsReaderFactory = commentsReaderFactory ?? throw new ArgumentNullException(nameof(commentsReaderFactory));
@@ -29,23 +29,22 @@ namespace Wikiled.News.Monitoring.Readers
         public async Task<Article> Read(ArticleDefinition definition)
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
-            var anonymous = ReadComments(definition, true);
-            var registered = ReadComments(definition, false);
+            var comments = ReadComments(definition);
             var readArticle = articleTextReader.ReadArticle(definition);
-            return new Article(definition, await anonymous, await registered, await readArticle, DateTime.UtcNow);
+            return new Article(definition, await comments, await readArticle, DateTime.UtcNow);
         }
 
-        private async Task<CommentsData> ReadComments(ArticleDefinition definition, bool anonymous)
+        private async Task<CommentData[]> ReadComments(ArticleDefinition definition)
         {
-            var commentsReader = commentsReaderFactory.Create(definition, anonymous);
-            await commentsReader.Init();
-            var result = await commentsReader.ReadAllComments().ToArray();
-            if (commentsReader.Total != result.Length)
-            {
-                logger.LogWarning("Mistmatch in comments count. Expected {0} but received {1}", commentsReader.Total, result.Length);
-            }
+            //var commentsReader = commentsReaderFactory.Create(definition);
+            //var result = await commentsReader.ReadAllComments().ToArray();
+            throw new NotImplementedException();
+            //if (commentsReader.Total != result.Length)
+            //{
+            //    logger.LogWarning("Mistmatch in comments count. Expected {0} but received {1}", commentsReader.Total, result.Length);
+            //}
 
-            return new CommentsData(commentsReader.Total, result);;
+            //return new CommentsData(commentsReader.Total, result);;
         }
     }
 }

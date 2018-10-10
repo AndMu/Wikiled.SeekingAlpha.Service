@@ -30,7 +30,7 @@ namespace Wikiled.News.Monitoring.Tests.Readers
         public async Task ReadArticle()
         {
             ArticleDefinition definition = new ArticleDefinition();
-            definition.Url = new Uri("https://www.delfi.lt/veidai/zmones/petro-grazulio-dukreles-mama-paviesino-ju-susirasinejima-galite-suprasti-kaip-jauciausi.d?id=78390475");
+            definition.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
             var text = await instance.ReadArticle(definition);
             Assert.IsNotNull(text);
             Assert.GreaterOrEqual(text.Text.Length, 100);

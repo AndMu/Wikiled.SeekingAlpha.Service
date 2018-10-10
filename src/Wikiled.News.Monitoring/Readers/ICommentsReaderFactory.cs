@@ -4,6 +4,6 @@ namespace Wikiled.News.Monitoring.Readers
 {
     public interface ICommentsReaderFactory
     {
-        ICommentsReader Create(ArticleDefinition article, bool anonymous);
+        ICommentsReader Create(ArticleDefinition article);
     }
 }

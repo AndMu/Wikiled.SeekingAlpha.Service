@@ -23,7 +23,7 @@ namespace Wikiled.News.Monitoring.Readers
                 });
         }
 
-        public async Task<HtmlDocument> ReadDocument(string url)
+        public async Task<HtmlDocument> ReadDocument(Uri url)
         {
             HttpClient client = new HttpClient();
             var page = await policy.ExecuteAsync(ct => client.GetStringAsync(url), CancellationToken.None)

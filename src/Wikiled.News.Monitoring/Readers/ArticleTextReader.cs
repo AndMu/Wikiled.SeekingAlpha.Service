@@ -24,7 +24,7 @@ namespace Wikiled.News.Monitoring.Readers
         public async Task<ArticleText> ReadArticle(ArticleDefinition definition)
         {
             logger.LogDebug("Reading article text: {0}", definition.Id);
-            var page = await reader.ReadDocument(definition.Url.ToString());
+            var page = await reader.ReadDocument(definition.Url);
             var doc = page.DocumentNode;
             var article = doc.QuerySelector("div.article-body");
             var description = article.QuerySelector("div[itemprop='description']");
