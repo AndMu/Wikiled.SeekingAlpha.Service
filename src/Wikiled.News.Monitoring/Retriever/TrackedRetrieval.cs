@@ -21,10 +21,11 @@ namespace Wikiled.News.Monitoring.Retriever
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
-        public async Task Authenticate(Uri uri, string data)
+        public async Task Authenticate(Uri uri, string data, Action<HttpWebRequest> modify = null)
         {
             using (var retriever = new SimpleDataRetriever(loggerFactory, manager, uri))
             {
+                retriever.Modifier = modify;
                 retriever.AllCookies = new CookieCollection();
                 retriever.AllowGlobalRedirection = true;
                 await retriever.PostData(data).ConfigureAwait(false);
@@ -32,16 +33,15 @@ namespace Wikiled.News.Monitoring.Retriever
             }
         }
 
-        public async Task<HtmlDocument> Read(Uri uri)
+        public async Task<string> Read(Uri uri, Action<HttpWebRequest> modify = null)
         {
             using (var retriever = new SimpleDataRetriever(loggerFactory, manager, uri))
             {
+                retriever.Modifier = modify;
                 retriever.AllowGlobalRedirection = true;
-                await retriever.ReceiveData().ConfigureAwait(false);
                 retriever.AllCookies = collection;
-                var document = new HtmlDocument();
-                document.LoadHtml(retriever.Data);
-                return document;
+                await retriever.ReceiveData().ConfigureAwait(false);
+                return retriever.Data;
             }
         }
 

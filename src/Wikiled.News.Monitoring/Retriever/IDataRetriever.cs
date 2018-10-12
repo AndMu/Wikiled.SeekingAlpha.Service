@@ -7,6 +7,8 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public interface IDataRetriever : IDisposable
     {
+        Action<HttpWebRequest> Modifier { get; set; }
+
         CookieCollection AllCookies { get; set; }
 
         bool AllowGlobalRedirection { get; set; }

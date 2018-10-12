@@ -3,7 +3,9 @@ using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Reactive.Linq;
+using Newtonsoft.Json;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Retriever;
@@ -48,13 +50,26 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
                         email = System.Web.HttpUtility.UrlEncode(email);
                         var pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
                         pass = System.Web.HttpUtility.UrlEncode(pass);
-                        string loginData = $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
-                        await reader.Authenticate(new Uri("https://seekingalpha.com/authentication/login"), loginData);
-                        HtmlDocument page = await reader.Read(article.Url).ConfigureAwait(false);
-                        foreach (CommentData commentData in ParsePage(page))
+                        string loginData =
+                            $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
+                        Action<HttpWebRequest> ajax = request =>
                         {
-                            observer.OnNext(commentData);
-                        }
+                            request.ContentType = "application/x-www-form-urlencoded";
+                            request.Headers.Add("X-Prototype-Version", "1.7.1");
+                            request.Headers.Add("Origin", "https://seekingalpha.com");
+                            request.Referer = "https://seekingalpha.com/";
+                            request.KeepAlive = true;
+                            request.Accept = "text/javascript, text/html, application/xml, text/xml, */*";
+                            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+                        };
+
+                        await reader.Authenticate(new Uri("https://seekingalpha.com/authentication/login"), loginData, ajax);
+                        var data = await reader.Read(article.Url, ajax).ConfigureAwait(false);
+                        var comments = JsonConvert.DeserializeObject<AlphaComments>(data);
+                        //foreach (CommentData commentData in ParsePage(page))
+                        //{
+                        //    observer.OnNext(commentData);
+                        //}
 
                         observer.OnCompleted();
                     }
@@ -64,60 +79,5 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
                     }
                 });
         }
-
-
-        private IEnumerable<CommentData> ParsePage(HtmlDocument html)
-        {
-            HtmlNode doc = html.DocumentNode;
-            IEnumerable<HtmlNode> comments = doc.QuerySelectorAll("section#comments");
-            throw new NotImplementedException();
-            foreach (HtmlNode htmlNode in comments)
-            {
-                //CommentData record = new CommentData();
-                //var author = htmlNode.QuerySelector("div.comment-author");
-                //if (author == null)
-                //{
-                //    logger.LogDebug("Author not found: {0}", htmlNode.InnerText.Trim());
-                //    continue;
-                //}
-
-                //record.Id = htmlNode.Attributes["data-post-id"].Value;
-                //record.Author = author.InnerText.Trim();
-                //var comment = htmlNode.QuerySelector("div.comment-content-inner");
-                //if (comment == null)
-                //{
-                //    logger.LogDebug("Comment not found for {0}[{1}]", record.Id, record.Author);
-                //    continue;
-                //}
-
-                //record.Text = comment.InnerText.Trim();
-                //record.UpVote = int.Parse(htmlNode.QuerySelector("div.comment-votes-up").InnerText.Trim());
-                //record.DownVote = int.Parse(htmlNode.QuerySelector("div.comment-votes-down").InnerText.Trim());
-                //var dateIp = htmlNode.QuerySelector("div.comment-date").InnerText.Trim();
-                //var ip = dateIp.IndexOf("IP:");
-                //if (ip == -1)
-                //{
-                //    record.Date = DateTime.Parse(dateIp.Trim());
-                //}
-                //else
-                //{
-                //    record.Date = DateTime.Parse(dateIp.Substring(0, ip).Trim());
-                //    record.Address = IPAddress.Parse(dateIp.Substring(ip + 3).Trim());
-                //}
-
-                //yield return record;
-            }
-        }
-
-        //private string GetUri(int page)
-        //{
-        //    var builder = new UriBuilder(article.Url);
-        //    var query = HttpUtility.ParseQueryString(builder.Query);
-        //    query["com"] = "1";
-        //    adjuster.AddParametes(query);
-        //    query["no"] = (page * pageSize).ToString();
-        //    builder.Query = query.ToString();
-        //    return builder.ToString();
-        //}
     }
 }

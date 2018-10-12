@@ -36,6 +36,8 @@ namespace Wikiled.News.Monitoring.Retriever
             DocumentUri = uri ?? throw new ArgumentNullException(nameof(uri));
         }
 
+        public Action<HttpWebRequest> Modifier { get; set; }
+
         public CookieCollection AllCookies
         {
             get => httpStateRequest.CookieContainer.GetCookies(DocumentUri);
@@ -98,20 +100,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 PrepareCall(HttpProtocol.POST);
             }
-
-            httpStateRequest.HttpRequest.ContentType = "application/x-www-form-urlencoded";
-            httpStateRequest.HttpRequest.Headers.Add("X-Prototype-Version", "1.7.1");
-            httpStateRequest.HttpRequest.Headers.Add("Origin", "https://seekingalpha.com");
-            httpStateRequest.HttpRequest.Referer = "https://seekingalpha.com/";
-            httpStateRequest.HttpRequest.KeepAlive = true;
-
-            /*             
-Origin: https://seekingalpha.com
-Content-type: application/x-www-form-urlencoded; charset=UTF-8
-Referer: https://seekingalpha.com/
-Accept-Encoding: gzip, deflate, br
-Accept-Language: en-GB,en;q=0.9,en-US;q=0.8,lt;q=0.7,ru;q=0.6
-             */
+            
             ASCIIEncoding encoding = new ASCIIEncoding();
             byte[] data = encoding.GetBytes(postData);
             using (Stream newStream = httpStateRequest.HttpRequest.GetRequestStream())
@@ -128,9 +117,7 @@ Accept-Language: en-GB,en;q=0.9,en-US;q=0.8,lt;q=0.7,ru;q=0.6
         {
             logger.LogDebug("Download: {0}", DocumentUri);
             CreateRequest(protocol);
-            //httpStateRequest.HttpRequest.Pipelined = false;
-            //httpStateRequest.HttpRequest.ServicePoint.ConnectionLimit = concurentManager.MaxProcessors;
-
+            Modifier?.Invoke(httpStateRequest.HttpRequest);
             Ip = manager.StartDownloading(DocumentUri);
             httpStateRequest.HttpRequest.ServicePoint.BindIPEndPointDelegate =
                 (servicePoint, endPoint, target) =>
@@ -175,24 +162,6 @@ Accept-Language: en-GB,en;q=0.9,en-US;q=0.8,lt;q=0.7,ru;q=0.6
             httpStateRequest.HttpRequest.KeepAlive = false;
             httpStateRequest.HttpRequest.Timeout = Timeout;
             httpStateRequest.HttpRequest.CookieContainer = httpStateRequest.CookieContainer;
-
-            httpStateRequest.HttpRequest.Accept = "text/javascript, text/html, application/xml, text/xml, */*";
-            httpStateRequest.HttpRequest.Headers.Add("X-Requested-With", "XMLHttpRequest");
-            //POST https://seekingalpha.com/authentication/login HTTP/1.1
-            //Host: seekingalpha.com
-            //Connection: keep - alive
-            //Content - Length: 130
-            //Accept: text/javascript, text/html, application/xml, text/xml, */*
-            //X-Prototype-Version: 1.7.1
-            //Origin: https://seekingalpha.com
-            //User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36
-            //Content-type: application/x-www-form-urlencoded; charset=UTF-8
-            //Referer: https://seekingalpha.com/
-            //Accept-Encoding: gzip, deflate, br
-            //Accept-Language: en-GB,en;q=0.9,en-US;q=0.8,lt;q=0.7,ru;q=0.6
-            //Cookie: _pxvid=0cbb7120-5aa3-11e8-88e2-ed2e40a2cd2c; hubspotutk=e4a63cf601154af43e8b56ff869b37cc; pxvid=0cbb7120-5aa3-11e8-88e2-ed2e40a2cd2c; __utmc=150447540; __hssrc=1; _igt=cf938032-df6c-4fa1-f092-e3ed61953383; __utmz=150447540.1539017799.88.6.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utma=150447540.1207112929.1526651698.1539080301.1539085222.90; __hstc=234155329.e4a63cf601154af43e8b56ff869b37cc.1526651698761.1539080302906.1539085222812.89; _ig=e6733454-7e8d-415e-aafa-86b6cf212df2; _sapi_session_id=eyJzZXNzaW9uX2lkIjoiNjk3NDY3ZGY3ZDMwMWFmOWRkYzQ2ZjAwYzhjMjc2NTUiLCJvbW5pYXV0aC5zdGF0ZSI6Ijg3MGVlMTE5NjAwNjc1MjExMzQ3NzlhYTkyMzhlZWJkOTBkNzBmMTEyOGYyNjAxNyIsInNldHRpbmdzX3JlZmVycmVyIjoiaHR0cHM6Ly9zZWVraW5nYWxwaGEuY29tL2FjY291bnQvc3Vic2NyaXB0aW9uc19zZXR0aW5ncyIsIl9jc3JmX3Rva2VuIjoicElTdDF4Z09NcVl0RHFaQWVmZWJCeE1WNEtFRDhEY1hMYTU1dlZmU1RKRT0ifQ%3D%3D--57dded3ea3efd91682e7934f110f9266aab1976f; h_px=1; machine_cookie=0539983042310; has_paid_subscription=true; __utmt=1; _px=e2dDVovAitYCtH9op85ZYIPqZv9SSypj4HI8BbroEjtcOPX4pOxSazcPXmxcLB4wnDiEBq7DdvJbZnhO/XutrA==:1000:EJgNMsHVJCbw96Sm3vToyXp7VmSUpmum/ekeBcYWqlDN/MYf+BRtPCBdOkaqH5tRVJWYpVPaKNX4oYLMwet4EyL89XP0Q4hTCAJayKYYY8G8wuMDjlSP282y8N2u9fVBZddPEn7yBtO/zDT8oK2EOXPyc+CNS3BTP1mzJM5PeqlE36vB+2Fi4EpZUCaWOuRf5w8xNQPwGk86fzLCoge0VxjPIkOs49/+D+VrqFIBCCvOmuwUdKF98rb/iEZFXzKGziiuXl70hgjS8Wl81se68g==; _px2=eyJ1IjoiNmQyMzhmNTAtY2JiYi0xMWU4LTkzNzctNzE1NzE0MjdiMmRkIiwidiI6IjBjYmI3MTIwLTVhYTMtMTFlOC04OGUyLWVkMmU0MGEyY2QyYyIsInQiOjE1MzkwODcxNDk4NjQsImgiOiIzZjQyZmJlN2FhNTdmNmRmNGQ1YWIzMjk2OWZmNDE1M2JmOWUyMzA2NjA3NGFjZDI2ZDc1YjhlNDNhOTY0ZTAzIn0=; __hssc=234155329.31.1539085222812; __utmb=150447540.60.9.1539086678103
-
-            //id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D=keistokas%40gmail.com&user%5Bpassword%5D=Kla1peda
         }
 
         private async Task ReadData()
