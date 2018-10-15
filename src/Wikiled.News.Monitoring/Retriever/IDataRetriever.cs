@@ -21,8 +21,6 @@ namespace Wikiled.News.Monitoring.Retriever
 
         IPAddress Ip { get; }
 
-        bool IsDispossed { get; }
-
         string Referer { get; set; }
 
         HttpWebRequest Request { get; }
@@ -33,9 +31,10 @@ namespace Wikiled.News.Monitoring.Retriever
 
         int Timeout { get; set; }
 
-        void Dispose();
         Task PostData(string postData, bool prepareCall = true);
+
         Task PostData(Tuple<string, string>[] parameters, bool prepareCall = true);
+
         Task ReceiveData(Stream stream = null);
     }
 }

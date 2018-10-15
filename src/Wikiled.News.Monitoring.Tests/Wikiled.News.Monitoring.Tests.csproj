@@ -26,6 +26,13 @@
     <ProjectReference Include="..\Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <None Update="Data\data.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="ForceGenerationOfBindingRedirects" AfterTargets="ResolveAssemblyReferences" BeforeTargets="GenerateBindingRedirects" Condition="'$(AutoGenerateBindingRedirects)' == 'true'">
     <PropertyGroup>
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>

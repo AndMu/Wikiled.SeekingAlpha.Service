@@ -2,7 +2,7 @@
 using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Readers.SeekingAlpha;
 
-namespace Wikiled.News.Monitoring.Containers
+namespace Wikiled.News.Monitoring.Containers.Alpha
 {
     public class AlphaModule : Module
     {

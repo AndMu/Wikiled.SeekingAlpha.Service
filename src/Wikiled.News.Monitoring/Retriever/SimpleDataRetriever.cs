@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -60,8 +61,6 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public IPAddress Ip { get; private set; }
 
-        public bool IsDispossed { get; private set; }
-
         public string Referer { get; set; }
 
         public HttpWebRequest Request => httpStateRequest.HttpRequest;
@@ -72,9 +71,11 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public int Timeout { get; set; }
 
+        private bool isDisposed;
+
         public virtual void Dispose()
         {
-            IsDispossed = true;
+            isDisposed = true;
             responseReading?.Close();
         }
 
@@ -96,20 +97,32 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public async Task PostData(string postData, bool prepareCall = true)
         {
-            if (prepareCall)
+            try
             {
-                PrepareCall(HttpProtocol.POST);
-            }
+                if (prepareCall)
+                {
+                    PrepareCall(HttpProtocol.POST);
+                }
             
-            ASCIIEncoding encoding = new ASCIIEncoding();
-            byte[] data = encoding.GetBytes(postData);
-            using (Stream newStream = httpStateRequest.HttpRequest.GetRequestStream())
+                ASCIIEncoding encoding = new ASCIIEncoding();
+                byte[] data = encoding.GetBytes(postData);
+                using (Stream newStream = httpStateRequest.HttpRequest.GetRequestStream())
+                {
+                    // Send the data.
+                    newStream.Write(data, 0, data.Length);
+                    responseReading = (HttpWebResponse)httpStateRequest.HttpRequest.GetResponse();
+                    await StartReading().ConfigureAwait(false);
+                    newStream.Close();
+                }
+            }
+            catch (Exception)
             {
-                // Send the data.
-                newStream.Write(data, 0, data.Length);
-                responseReading = (HttpWebResponse)httpStateRequest.HttpRequest.GetResponse();
-                await StartReading().ConfigureAwait(false);
-                newStream.Close();
+                if (Ip != null)
+                {
+                    manager.FinishedDownloading(DocumentUri, Ip);
+                }
+
+                throw;
             }
         }
 
@@ -129,10 +142,22 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public async Task ReceiveData(Stream stream = null)
         {
-            readStream = stream;
-            PrepareCall();
-            responseReading = (HttpWebResponse)await httpStateRequest.HttpRequest.GetResponseAsync().ConfigureAwait(false);
-            await StartReading().ConfigureAwait(false);
+            try
+            {
+                readStream = stream;
+                PrepareCall();
+                responseReading = (HttpWebResponse)await httpStateRequest.HttpRequest.GetResponseAsync().ConfigureAwait(false);
+                await StartReading().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                if (Ip != null)
+                {
+                    manager.FinishedDownloading(DocumentUri, Ip);
+                }
+
+                throw;
+            }
         }
 
         private static bool ValidateRemoteCertificate(

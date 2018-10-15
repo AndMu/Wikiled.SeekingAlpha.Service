@@ -1,28 +1,33 @@
 using System;
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 using Wikiled.News.Monitoring.Data;
-using Wikiled.News.Monitoring.Readers;
+using Wikiled.News.Monitoring.Readers.SeekingAlpha;
+using Wikiled.News.Monitoring.Retriever;
 
-namespace Wikiled.News.Monitoring.Tests.Readers
+namespace Wikiled.News.Monitoring.Tests.Readers.Alpha
 {
     [TestFixture]
-    public class ArticleTextReaderTests
+    public class AlphaArticleTextReaderTests
     {
         private Mock<ILoggerFactory> mockLoggerFactory;
 
-        private Mock<IHtmlReader> mockHtmlReader;
+        private Mock<ITrackedRetrieval> mockHtmlReader;
 
-        private ArticleTextReader instance;
+        private AlphaArticleTextReader instance;
 
         [SetUp]
         public void SetUp()
         {
             mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockHtmlReader = new Mock<IHtmlReader>();
+            mockHtmlReader = new Mock<ITrackedRetrieval>();
+            var text = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "data", "data.html"));
+            mockHtmlReader.Setup(item => item.Read(It.IsAny<Uri>(), It.IsAny<Action<HttpWebRequest>>())).Returns(Task.FromResult(text));
             instance = CreateInstance();
         }
 
@@ -34,23 +39,23 @@ namespace Wikiled.News.Monitoring.Tests.Readers
             var text = await instance.ReadArticle(definition);
             Assert.IsNotNull(text);
             Assert.GreaterOrEqual(text.Text.Length, 100);
-            Assert.GreaterOrEqual(text.Description.Length, 100);
+            Assert.AreEqual("Apple: Price Matters", text.Title);
         }
 
         [Test]
         public void Construct()
         {
-            Assert.Throws<ArgumentNullException>(() => new ArticleTextReader(
+            Assert.Throws<ArgumentNullException>(() => new AlphaArticleTextReader(
                 null,
                 mockHtmlReader.Object));
-            Assert.Throws<ArgumentNullException>(() => new ArticleTextReader(
+            Assert.Throws<ArgumentNullException>(() => new AlphaArticleTextReader(
                 mockLoggerFactory.Object,
                 null));
         }
 
-        private ArticleTextReader CreateInstance()
+        private AlphaArticleTextReader CreateInstance()
         {
-            return new ArticleTextReader(new NullLoggerFactory(), new HtmlReader());
+            return new AlphaArticleTextReader(new NullLoggerFactory(), mockHtmlReader.Object);
         }
     }
 }

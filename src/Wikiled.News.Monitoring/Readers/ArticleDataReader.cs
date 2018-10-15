@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Data;
 
-namespace Wikiled.News.Monitoring.Readers
+namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 {
     public class ArticleDataReader : IArticleDataReader
     {
