@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance
+namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
 {
     [TestFixture]
     public class AlphaArticleTextReader : BaseAlphaTests

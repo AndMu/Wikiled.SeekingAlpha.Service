@@ -10,7 +10,7 @@ using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers.SeekingAlpha;
 using Wikiled.News.Monitoring.Retriever;
 
-namespace Wikiled.News.Monitoring.Tests.Readers.Alpha
+namespace Wikiled.News.Monitoring.Tests.Readers.SeekingAlpha
 {
     [TestFixture]
     public class AlphaArticleTextReaderTests

@@ -6,7 +6,7 @@ using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers.SeekingAlpha;
 using Wikiled.News.Monitoring.Retriever;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance
+namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
 {
     [TestFixture]
     public abstract class BaseAlphaTests

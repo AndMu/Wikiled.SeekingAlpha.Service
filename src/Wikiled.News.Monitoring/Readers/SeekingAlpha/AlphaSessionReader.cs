@@ -27,7 +27,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             this.article = article ?? throw new ArgumentNullException(nameof(article));
         }
 
-        public async Task<ICommentsReader> ReadComments()
+        public ICommentsReader ReadComments()
         {
             return new AlphaCommentsReader(loggerFactory, article, reader);
         }

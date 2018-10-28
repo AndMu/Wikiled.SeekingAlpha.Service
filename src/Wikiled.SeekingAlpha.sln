@@ -14,9 +14,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Api", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Service.Tests", "Wikiled.SeekingAlpha.Service.Tests\Wikiled.SeekingAlpha.Service.Tests.csproj", "{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wikiled.News.Monitoring", "Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj", "{7926E32F-2EC0-41C1-9867-B695B9B7B72B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring", "Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj", "{7926E32F-2EC0-41C1-9867-B695B9B7B72B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wikiled.News.Monitoring.Tests", "Wikiled.News.Monitoring.Tests\Wikiled.News.Monitoring.Tests.csproj", "{163D1B00-41FE-47E0-A69D-4B39A285225E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.Tests", "Wikiled.News.Monitoring.Tests\Wikiled.News.Monitoring.Tests.csproj", "{163D1B00-41FE-47E0-A69D-4B39A285225E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{447123EB-BA32-4ED7-867A-0A72133FEEFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wikiled.News.Monitoring.TestApp", "Wikiled.News.Monitoring.TestApp\Wikiled.News.Monitoring.TestApp.csproj", "{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +48,17 @@ Global
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD} = {447123EB-BA32-4ED7-867A-0A72133FEEFB}
+		{163D1B00-41FE-47E0-A69D-4B39A285225E} = {447123EB-BA32-4ED7-867A-0A72133FEEFB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {635F2295-F5D6-4362-8D98-D884522DFE57}
