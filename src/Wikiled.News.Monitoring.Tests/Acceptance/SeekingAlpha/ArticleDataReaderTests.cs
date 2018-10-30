@@ -20,7 +20,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         public void SetUp()
         {
             ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterModule<AlphaModule>();
+            builder.RegisterModule(new AlphaModule("AAPL"));
             builder.RegisterModule<MainModule>();
             container = builder.Build();
             instance = container.Resolve<IArticleDataReader>();

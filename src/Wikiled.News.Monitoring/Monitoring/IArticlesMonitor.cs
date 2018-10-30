@@ -6,5 +6,7 @@ namespace Wikiled.News.Monitoring.Monitoring
     public interface IArticlesMonitor
     {
         IObservable<Article> Start();
+
+        IObservable<Article> Monitor();
     }
 }

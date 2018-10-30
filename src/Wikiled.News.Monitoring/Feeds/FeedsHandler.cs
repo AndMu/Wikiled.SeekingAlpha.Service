@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CodeHollow.FeedReader;
+using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Feeds
 {
     public class FeedsHandler : IFeedsHandler
     {
+        private readonly ILogger<FeedsHandler> logger;
+
         private readonly FeedName[] feeds;
 
-        public FeedsHandler(FeedName[] feeds)
+        public FeedsHandler(ILogger<FeedsHandler> logger, FeedName[] feeds)
         {
             this.feeds = feeds ?? throw new ArgumentNullException(nameof(feeds));
+            this.logger = logger;
         }
 
         public IObservable<ArticleDefinition> GetArticles()
@@ -21,6 +25,7 @@ namespace Wikiled.News.Monitoring.Feeds
             return Observable.Create<ArticleDefinition>(
                 async observer =>
                 {
+                    logger.LogInformation("Getting articles...");
                     List<(FeedName Feed, Task<Feed> Task)> tasks = new List<(FeedName Feed, Task<Feed> Task)>();
                     foreach (var feed in feeds)
                     {
@@ -40,6 +45,7 @@ namespace Wikiled.News.Monitoring.Feeds
                             article.Title = item.Title;
                             article.Feed = task.Feed;
                             article.Element = item.SpecificItem.Element;
+                            logger.LogDebug("Found definition {0}...", article.Title);
                             observer.OnNext(article);
                         }
                     }

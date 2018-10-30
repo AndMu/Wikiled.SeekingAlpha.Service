@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Extensions;
 using Wikiled.News.Monitoring.Feeds;
+using Wikiled.News.Monitoring.Readers;
 
 namespace Wikiled.News.Monitoring.Monitoring
 {
@@ -16,50 +21,71 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private readonly ILogger<ArticlesMonitor> logger;
 
-        private Dictionary<string, Article> scanned = new Dictionary<string, Article>();
+        private readonly ConcurrentDictionary<string, Article> scanned = new ConcurrentDictionary<string, Article>();
 
-        public ArticlesMonitor(ILoggerFactory loggerFactory, IScheduler scheduler, IFeedsHandler handler)
+        private readonly IArticleDataReader reader;
+
+        public ArticlesMonitor(ILogger<ArticlesMonitor> logger, IScheduler scheduler, IFeedsHandler handler, IArticleDataReader reader)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            logger = loggerFactory.CreateLogger<ArticlesMonitor>();
+            this.logger = logger;
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             this.handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
         }
 
         public IObservable<Article> Start()
         {
             logger.LogDebug("Start");
-            var scanFeed = Observable.Interval(TimeSpan.FromHours(1), scheduler)
-                .SelectMany(handler.GetArticles())
-                .Where(item => !scanned.ContainsKey(item.Id))
-                .Select(ArticleReceived)
-                .Where(item => item != null);
+            var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
+                                  .Where(item => !scanned.ContainsKey(item.Id))
+                                  .Select(ArticleReceived)
+                                  .Merge()
+                                  .Where(item => item != null);
 
-            var updated = Observable.Interval(TimeSpan.FromHours(6), scheduler)
-                .SelectMany(Updated().ToObservable(scheduler));
-
-            return scanFeed.Merge(updated);
+            return scanFeed;
         }
 
-        private IEnumerable<Article> Updated()
+        public IObservable<Article> Monitor()
         {
-            throw new NotImplementedException();
+            return Observable.Interval(TimeSpan.FromHours(4), scheduler)
+                             .Select(item => Updated().ToObservable(scheduler))
+                             .Merge()
+                             .Merge();
         }
 
-        private Article ArticleReceived(ArticleDefinition article)
+        private IEnumerable<Task<Article>> Updated()
+        {
+            var now = DateTime.UtcNow;
+            var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= 2).ToArray();
+            foreach (var pair in old)
+            {
+                scanned.TryRemove(pair.Key, out _);
+            }
+
+            return scanned.Where(item => now.Subtract(item.Value.DateTime).Hours >= 2).Select(item => reader.Read(item.Value.Definition));
+        }
+
+        private async Task<Article> ArticleReceived(ArticleDefinition article)
         {
             logger.LogDebug("ArticleReceived: {0}({1})", article.Topic, article.Id);
-            //if (cache.TryGetValue(article.ToString(), out var cached))
-            //{
-            //    logger.LogDebug("Article already processed: {0}", article.Id);
-            //    return null;
-            //}
+            if (scanned.TryGetValue(article.ToString(), out var _))
+            {
+                logger.LogDebug("Article already processed: {0}", article.Id);
+                return null;
+            }
 
-            throw new NotImplementedException();
+            try
+            {
+                var result = await reader.Read(article).ConfigureAwait(false);
+                scanned[article.ToString()] = result;
+                return result;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Failed");
+            }
+
+            return null;
         }
     }
 }
