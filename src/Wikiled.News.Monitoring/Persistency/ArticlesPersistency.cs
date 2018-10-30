@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Wikiled.Common.Extensions;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Persistency
@@ -23,7 +24,7 @@ namespace Wikiled.News.Monitoring.Persistency
         {
             logger.LogInformation("Saving: {0}", article.Definition.Title);
             string output = JsonConvert.SerializeObject(article, Formatting.Indented);
-            var file = Path.Combine(path, $"{article.Definition.Title}_{article.DateTime:yyyy-MM-dd}.json");
+            var file = Path.Combine(path, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
             lock (syncRoot)
             {
                 File.WriteAllText(file, output);

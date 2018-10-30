@@ -27,7 +27,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             var doc = page.DocumentNode;
             var article = doc.QuerySelector("article");
             var title = article.QuerySelector("h1[itemprop='headline']");
-            var articleInner = doc.QuerySelector("div#a-body");
+            var articleInner = definition.Topic == "News" ? doc.QuerySelector("div#mc-body") : doc.QuerySelector("div#a-body");
             StringBuilder builder = new StringBuilder();
             var paragraphs = articleInner.QuerySelectorAll("p");
             foreach (var paragraph in paragraphs)

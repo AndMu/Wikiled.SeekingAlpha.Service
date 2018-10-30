@@ -16,14 +16,18 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private readonly ILoggerFactory loggerFactory;
 
+        private readonly ILogger<TrackedRetrieval> logger;
+
         private readonly Policy policy;
 
         public TrackedRetrieval(ILoggerFactory loggerFactory, IConcurentManager manager)
         {
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            logger = loggerFactory.CreateLogger<TrackedRetrieval>();
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
             // Handle both exceptions and return values in one policy
             HttpStatusCode[] httpStatusCodesWorthRetrying = {
+                                                                HttpStatusCode.Forbidden,
                                                                 HttpStatusCode.RequestTimeout, // 408
                                                                 HttpStatusCode.InternalServerError, // 500
                                                                 HttpStatusCode.BadGateway, // 502
@@ -32,12 +36,18 @@ namespace Wikiled.News.Monitoring.Retriever
                                                             };
             policy = Policy
                      .Handle<WebException>(r => httpStatusCodesWorthRetrying.Contains(((HttpWebResponse)r.Response).StatusCode))
-                     .WaitAndRetryAsync(new[]
-                                        {
-                                            TimeSpan.FromSeconds(1),
-                                            TimeSpan.FromSeconds(2),
-                                            TimeSpan.FromSeconds(4)
-                                        });
+                     .WaitAndRetryAsync(5,
+                         (retries, ex, ctx) =>
+                         {
+                             if (((HttpWebResponse)((WebException)ex).Response).StatusCode == HttpStatusCode.Forbidden)
+                             {
+                                 logger.LogError("Forbidden detected. Waiting 20 minutes");
+                                 return TimeSpan.FromMinutes(20);
+                             }
+
+                             return TimeSpan.FromMilliseconds(retries);
+                         },
+                         (ts, i, ctx, task) => Task.CompletedTask);
         }
 
         public async Task Authenticate(Uri uri, string data, Action<HttpWebRequest> modify = null)

@@ -13,10 +13,12 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             if (definition.Url.ToString().ToLower().Contains("news?"))
             {
                 definition.Url = new Uri($"https://seekingalpha.com/news/{definition.Id}");
+                definition.Topic = "News";
             }
             else if (definition.Url.ToString().ToLower().Contains("article/"))
             {
                 definition.Url = new Uri($"https://seekingalpha.com/article/{definition.Id}");
+                definition.Topic = "Article";
             }
 
             return definition;

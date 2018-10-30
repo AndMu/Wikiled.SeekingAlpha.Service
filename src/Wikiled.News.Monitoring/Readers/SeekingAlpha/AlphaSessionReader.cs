@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Retriever;
@@ -15,28 +16,38 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 
         private readonly ILoggerFactory loggerFactory;
 
-        private readonly ArticleDefinition article;
-
         private bool initialized;
 
-        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader, ArticleDefinition article)
+        private readonly SemaphoreSlim calls = new SemaphoreSlim(1);
+
+        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-            this.article = article ?? throw new ArgumentNullException(nameof(article));
 
         }
 
-        public ICommentsReader ReadComments()
+        public ICommentsReader ReadComments(ArticleDefinition article)
         {
             return new AlphaCommentsReader(loggerFactory, article, reader);
         }
 
-        public async Task<ArticleText> ReadArticle()
+        public async Task<ArticleText> ReadArticle(ArticleDefinition article)
         {
-            await Init().ConfigureAwait(false);
-            return await new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article).ConfigureAwait(false);
+            try
+            {
+                await calls.WaitAsync().ConfigureAwait(false);
+                await Task.Delay(30000).ConfigureAwait(false);
+                await Init().ConfigureAwait(false);
+                var result = await new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article).ConfigureAwait(false);
+                await Task.Delay(30000).ConfigureAwait(false);
+                return result;
+            }
+            finally
+            {
+                calls.Release();
+            }
         }
 
         private async Task Init()
@@ -47,9 +58,9 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             }
 
             initialized = true;
-            var email = configuration.GetEnvironmentVariable("ALPHA_EMAIL");
+            string email = configuration.GetEnvironmentVariable("ALPHA_EMAIL");
             email = System.Web.HttpUtility.UrlEncode(email);
-            var pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
+            string pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
             pass = System.Web.HttpUtility.UrlEncode(pass);
             string loginData = $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
             await reader.Authenticate(new Uri("https://seekingalpha.com/authentication/login"), loginData, Constants.Ajax);

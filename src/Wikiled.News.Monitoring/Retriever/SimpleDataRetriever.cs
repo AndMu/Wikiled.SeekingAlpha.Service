@@ -180,7 +180,7 @@ namespace Wikiled.News.Monitoring.Retriever
             httpStateRequest.HttpRequest.MaximumAutomaticRedirections = 10;
             httpStateRequest.HttpRequest.Referer = Referer;
             httpStateRequest.HttpRequest.Accept = "text/html, application/xhtml+xml, */*";
-            httpStateRequest.HttpRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)";
+            httpStateRequest.HttpRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/5.0)";
             httpStateRequest.HttpRequest.KeepAlive = false;
             httpStateRequest.HttpRequest.Timeout = Timeout;
             httpStateRequest.HttpRequest.CookieContainer = httpStateRequest.CookieContainer;
