@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Wikiled.News.Monitoring.Retriever
 {
-    public class SimpleDataRetriever : IDataRetriever
+    public sealed class SimpleDataRetriever : IDataRetriever
     {
         private const string defaultEncoding = "utf-8";
 
@@ -71,12 +70,10 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public int Timeout { get; set; }
 
-        private bool isDisposed;
-
-        public virtual void Dispose()
+        public void Dispose()
         {
-            isDisposed = true;
             responseReading?.Close();
+            responseReading = null;
         }
 
         public async Task PostData(Tuple<string, string>[] parameters, bool prepareCall = true)
@@ -271,7 +268,7 @@ namespace Wikiled.News.Monitoring.Retriever
             }
             finally
             {
-                logger.LogError("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
+                logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
                 manager.FinishedDownloading(DocumentUri, Ip);
 
                 httpStateRequest.HttpResponse?.Close();

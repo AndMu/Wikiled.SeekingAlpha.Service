@@ -25,6 +25,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             this.article = article ?? throw new ArgumentNullException(nameof(article));
+
         }
 
         public ICommentsReader ReadComments()

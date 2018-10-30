@@ -32,6 +32,7 @@ namespace Wikiled.News.Monitoring.Containers.Alpha
             builder.RegisterType<AlphaSessionReader>().As<ISessionReader>();
             builder.RegisterType<AlphaCommentsReader>().As<ICommentsReader>();
             builder.RegisterType<AlphaArticleTextReader>().As<IArticleTextReader>();
+            builder.RegisterType<AlphaDefinitionTransformer>().As<IDefinitionTransformer>();
 
             foreach (var stock in stocks)
             {
