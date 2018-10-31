@@ -1,10 +1,11 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 
 namespace Wikiled.News.Monitoring.Retriever
 {
     public interface IIPHandler
     {
-        IPAddress GetAvailable();
+        Task<IPAddress> GetAvailable();
 
         void Release(IPAddress ipAddress);
     }

@@ -5,6 +5,7 @@ using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers.SeekingAlpha;
 using Wikiled.News.Monitoring.Retriever;
+using Wikiled.News.Monitoring.Tests.Helpers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
 {
@@ -13,17 +14,21 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
     {
         public AlphaSessionReader Session { get; private set; }
 
+        public NetworkHelper Helper { get; private set; }
+
+        public ArticleDefinition Article { get; private set; }
+
         [SetUp]
         public void Init()
         {
-            var article = new ArticleDefinition();
-            article.Id = "4211146";
-            article.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
+            Helper = new NetworkHelper();
+            Article = new ArticleDefinition();
+            Article.Id = "4211146";
+            Article.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
             Session = new AlphaSessionReader(
                 new NullLoggerFactory(),
                 new ApplicationConfiguration(),
-                new TrackedRetrieval(new NullLoggerFactory(), ConcurentManager.CreateDefault()),
-                article);
+                Helper.Retrieval);
         }
     }
 

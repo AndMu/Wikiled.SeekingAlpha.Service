@@ -10,49 +10,39 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public class TrackedRetrieval : ITrackedRetrieval
     {
-        private readonly IConcurentManager manager;
-
         private CookieCollection collection;
-
-        private readonly ILoggerFactory loggerFactory;
 
         private readonly ILogger<TrackedRetrieval> logger;
 
+        private readonly Func<Uri, IDataRetriever> retrieverFactory;
+
         private readonly Policy policy;
 
-        public TrackedRetrieval(ILoggerFactory loggerFactory, IConcurentManager manager)
+        public TrackedRetrieval(ILogger<TrackedRetrieval> logger, Func<Uri, IDataRetriever> retrieverFactory, RetrieveConfguration config)
         {
-            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-            logger = loggerFactory.CreateLogger<TrackedRetrieval>();
-            this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            // Handle both exceptions and return values in one policy
-            HttpStatusCode[] httpStatusCodesWorthRetrying = {
-                                                                HttpStatusCode.Forbidden,
-                                                                HttpStatusCode.RequestTimeout, // 408
-                                                                HttpStatusCode.InternalServerError, // 500
-                                                                HttpStatusCode.BadGateway, // 502
-                                                                HttpStatusCode.ServiceUnavailable, // 503
-                                                                HttpStatusCode.GatewayTimeout // 504
-                                                            };
+            this.retrieverFactory = retrieverFactory;
+            this.logger = logger;
+            HttpStatusCode[] httpStatusCodesWorthRetrying = config.LongRetryCodes.Concat(config.RetryCodes).ToArray();
             policy = Policy
                      .Handle<WebException>(r => httpStatusCodesWorthRetrying.Contains(((HttpWebResponse)r.Response).StatusCode))
                      .WaitAndRetryAsync(5,
                          (retries, ex, ctx) =>
                          {
-                             if (((HttpWebResponse)((WebException)ex).Response).StatusCode == HttpStatusCode.Forbidden)
+                             if (config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
                              {
-                                 logger.LogError("Forbidden detected. Waiting 20 minutes");
-                                 return TimeSpan.FromMinutes(20);
+                                 var wait = TimeSpan.FromSeconds(config.LongRetryDelay);
+                                 logger.LogError("Forbidden detected. Waiting {0}", wait);
+                                 return wait;
                              }
 
-                             return TimeSpan.FromMilliseconds(retries);
+                             return TimeSpan.FromSeconds(retries);
                          },
                          (ts, i, ctx, task) => Task.CompletedTask);
         }
 
         public async Task Authenticate(Uri uri, string data, Action<HttpWebRequest> modify = null)
         {
-            using (SimpleDataRetriever retriever = new SimpleDataRetriever(loggerFactory, manager, uri))
+            using (var retriever = retrieverFactory(uri))
             {
                 retriever.Modifier = modify;
                 retriever.AllCookies = new CookieCollection();
@@ -64,7 +54,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public async Task<string> Read(Uri uri, Action<HttpWebRequest> modify = null)
         {
-            using (SimpleDataRetriever retriever = new SimpleDataRetriever(loggerFactory, manager, uri))
+            using (var retriever = retrieverFactory(uri))
             {
                 retriever.Modifier = modify;
                 retriever.AllowGlobalRedirection = true;
@@ -76,7 +66,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public async Task ReadFile(Uri uri, Stream stream)
         {
-            using (SimpleDataRetriever retriever = new SimpleDataRetriever(loggerFactory, manager, uri))
+            using (var retriever = retrieverFactory(uri))
             {
                 retriever.AllCookies = collection;
                 retriever.AllowGlobalRedirection = true;

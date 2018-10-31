@@ -19,7 +19,6 @@ namespace Wikiled.News.Monitoring.Containers
                    .SingleInstance();
             builder.RegisterType<TrackedRetrieval>().As<ITrackedRetrieval>();
             builder.RegisterType<ArticleDataReader>().As<IArticleDataReader>();
-            builder.Register(c => ConcurentManager.CreateDefault()).As<IConcurentManager>().SingleInstance();
 
             builder.RegisterInstance(TaskPoolScheduler.Default).As<IScheduler>();
             builder.RegisterType<ArticlesMonitor>().As<IArticlesMonitor>();

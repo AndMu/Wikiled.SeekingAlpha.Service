@@ -10,7 +10,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         [Test]
         public async Task ReadComments()
         {
-            var commentsReader = Session.ReadComments();
+            var commentsReader = Session.ReadComments(Article);
             var comments = await commentsReader.ReadAllComments().ToArray();
             Assert.Greater(comments.Length, 100);
         }

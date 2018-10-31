@@ -1,31 +1,56 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Wikiled.News.Monitoring.Retriever
 {
     public class IPHandler : IIPHandler
     {
-        private readonly BlockingCollection<IPAddress> addressed = new BlockingCollection<IPAddress>();
+        private readonly SemaphoreSlim semaphore;
 
-        public IPHandler(IPAddress[] ips, int maxPerIp)
+        private readonly ConcurrentQueue<IPAddress> addressed = new ConcurrentQueue<IPAddress>();
+
+        public IPHandler(IPAddress[] ips, RetrieveConfguration config)
         {
-            for (int i = 0; i < maxPerIp; i++)
+            if (ips == null)
             {
-                foreach (var ip in ips)
+                throw new ArgumentNullException(nameof(ips));
+            }
+
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            for (int i = 0; i < config.MaxConcurrent; i++)
+            {
+                foreach (IPAddress ip in ips)
                 {
-                    addressed.Add(ip);
+                    addressed.Enqueue(ip);
+                }
+            }
+
+            semaphore = new SemaphoreSlim(addressed.Count);
+        }
+
+        public async Task<IPAddress> GetAvailable()
+        {
+            for (; ; )
+            {
+                await semaphore.WaitAsync().ConfigureAwait(false);
+                if (addressed.TryDequeue(out IPAddress item))
+                {
+                    return item;
                 }
             }
         }
 
-        public IPAddress GetAvailable()
-        {
-            return addressed.Take();
-        }
-
         public void Release(IPAddress ipAddress)
         {
-            addressed.Add(ipAddress);
+            addressed.Enqueue(ipAddress);
+            semaphore.Release();
         }
     }
 }

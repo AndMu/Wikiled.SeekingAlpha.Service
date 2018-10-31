@@ -15,7 +15,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private readonly HttpState httpStateRequest = new HttpState();
 
-        private readonly ILogger logger;
+        private readonly ILogger<SimpleDataRetriever> logger;
 
         private readonly IConcurentManager manager;
 
@@ -23,15 +23,10 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private HttpWebResponse responseReading;
 
-        public SimpleDataRetriever(ILoggerFactory loggerFactory, IConcurentManager manager, Uri uri)
+        public SimpleDataRetriever(ILogger<SimpleDataRetriever> logger, IConcurentManager manager, Uri uri)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            logger = loggerFactory.CreateLogger<SimpleDataRetriever>();
             Timeout = 2 * 60 * 1000;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
             DocumentUri = uri ?? throw new ArgumentNullException(nameof(uri));
         }
@@ -98,7 +93,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (prepareCall)
                 {
-                    PrepareCall(HttpProtocol.POST);
+                    await PrepareCall(HttpProtocol.POST).ConfigureAwait(false);
                 }
             
                 ASCIIEncoding encoding = new ASCIIEncoding();
@@ -116,19 +111,19 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    manager.FinishedDownloading(DocumentUri, Ip);
+                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
                 }
 
                 throw;
             }
         }
 
-        private void PrepareCall(HttpProtocol protocol = HttpProtocol.GET)
+        private async Task PrepareCall(HttpProtocol protocol = HttpProtocol.GET)
         {
             logger.LogDebug("Download: {0}", DocumentUri);
             CreateRequest(protocol);
             Modifier?.Invoke(httpStateRequest.HttpRequest);
-            Ip = manager.StartDownloading(DocumentUri);
+            Ip = await manager.StartDownloading(DocumentUri).ConfigureAwait(false);
             httpStateRequest.HttpRequest.ServicePoint.BindIPEndPointDelegate =
                 (servicePoint, endPoint, target) =>
                 {
@@ -142,7 +137,7 @@ namespace Wikiled.News.Monitoring.Retriever
             try
             {
                 readStream = stream;
-                PrepareCall();
+                await PrepareCall().ConfigureAwait(false);
                 responseReading = (HttpWebResponse)await httpStateRequest.HttpRequest.GetResponseAsync().ConfigureAwait(false);
                 await StartReading().ConfigureAwait(false);
             }
@@ -150,7 +145,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    manager.FinishedDownloading(DocumentUri, Ip);
+                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
                 }
 
                 throw;
@@ -269,8 +264,7 @@ namespace Wikiled.News.Monitoring.Retriever
             finally
             {
                 logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
-                manager.FinishedDownloading(DocumentUri, Ip);
-
+                await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
                 httpStateRequest.HttpResponse?.Close();
                 ServicePointManager.ServerCertificateValidationCallback -= ValidateRemoteCertificate;
             }

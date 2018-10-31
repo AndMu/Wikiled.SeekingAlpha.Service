@@ -8,11 +8,11 @@ namespace Wikiled.News.Monitoring.Persistency
 {
     public class ArticlesPersistency
     {
-        private ILogger<ArticlesPersistency> logger;
+        private readonly ILogger<ArticlesPersistency> logger;
 
-        private string path;
+        private readonly string path;
 
-        private object syncRoot = new object();
+        private readonly object syncRoot = new object();
 
         public ArticlesPersistency(ILogger<ArticlesPersistency> logger, string path)
         {

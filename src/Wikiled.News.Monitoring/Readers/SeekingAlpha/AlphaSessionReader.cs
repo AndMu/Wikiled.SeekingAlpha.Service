@@ -38,10 +38,8 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             try
             {
                 await calls.WaitAsync().ConfigureAwait(false);
-                await Task.Delay(30000).ConfigureAwait(false);
                 await Init().ConfigureAwait(false);
                 var result = await new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article).ConfigureAwait(false);
-                await Task.Delay(30000).ConfigureAwait(false);
                 return result;
             }
             finally
