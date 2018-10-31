@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Retriever;
@@ -43,6 +44,9 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
                         foreach (CommentData commentData in Read(comments.Comments))
                         {
                             total++;
+                            var document = new HtmlDocument();
+                            document.LoadHtml(commentData.Text);
+                            commentData.Text = document.DocumentNode.InnerText;
                             observer.OnNext(commentData);
                         }
 

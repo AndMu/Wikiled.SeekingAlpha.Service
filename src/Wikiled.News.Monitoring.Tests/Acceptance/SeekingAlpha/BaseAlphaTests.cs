@@ -30,6 +30,12 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
                 new ApplicationConfiguration(),
                 Helper.Retrieval);
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Helper.Container.Dispose();
+        }
     }
 
 }

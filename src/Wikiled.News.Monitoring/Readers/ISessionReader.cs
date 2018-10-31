@@ -5,7 +5,9 @@ namespace Wikiled.News.Monitoring.Readers
 {
     public interface ISessionReader
     {
-        ICommentsReader ReadComments(ArticleDefinition article);
+        Task Init();
+
+        Task<CommentData[]> ReadComments(ArticleDefinition article);
 
         Task<ArticleText> ReadArticle(ArticleDefinition article);
     }

@@ -28,10 +28,11 @@ namespace Wikiled.News.Monitoring.Retriever
                      .WaitAndRetryAsync(5,
                          (retries, ex, ctx) =>
                          {
-                             if (config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
+                             var web = ((WebException)ex);
+                             if (config.LongRetryCodes.Contains(((HttpWebResponse)web.Response).StatusCode))
                              {
                                  var wait = TimeSpan.FromSeconds(config.LongRetryDelay);
-                                 logger.LogError("Forbidden detected. Waiting {0}", wait);
+                                 logger.LogError("Forbidden detected [{1}]. Waiting {0}", wait, web.Response.ResponseUri);
                                  return wait;
                              }
 

@@ -30,11 +30,9 @@ namespace Wikiled.News.Monitoring.Readers
             return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
         }
 
-        private async Task<CommentData[]> ReadComments(ArticleDefinition definition)
+        private Task<CommentData[]> ReadComments(ArticleDefinition definition)
         {
-            var commentsReader = sessionReader.ReadComments(definition);
-            var result = await commentsReader.ReadAllComments().ToArray();
-            return result;
+            return sessionReader.ReadComments(definition);
         }
     }
 }

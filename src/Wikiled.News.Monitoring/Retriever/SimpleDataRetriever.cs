@@ -17,13 +17,13 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private readonly ILogger<SimpleDataRetriever> logger;
 
-        private readonly IConcurentManager manager;
+        private readonly IIPHandler manager;
 
         private Stream readStream;
 
         private HttpWebResponse responseReading;
 
-        public SimpleDataRetriever(ILogger<SimpleDataRetriever> logger, IConcurentManager manager, Uri uri)
+        public SimpleDataRetriever(ILogger<SimpleDataRetriever> logger, IIPHandler manager, Uri uri)
         {
             Timeout = 2 * 60 * 1000;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -111,7 +111,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
+                    manager.Release(Ip);
                 }
 
                 throw;
@@ -123,7 +123,7 @@ namespace Wikiled.News.Monitoring.Retriever
             logger.LogDebug("Download: {0}", DocumentUri);
             CreateRequest(protocol);
             Modifier?.Invoke(httpStateRequest.HttpRequest);
-            Ip = await manager.StartDownloading(DocumentUri).ConfigureAwait(false);
+            Ip = await manager.GetAvailable().ConfigureAwait(false);
             httpStateRequest.HttpRequest.ServicePoint.BindIPEndPointDelegate =
                 (servicePoint, endPoint, target) =>
                 {
@@ -145,7 +145,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
+                    manager.Release(Ip);
                 }
 
                 throw;
@@ -264,7 +264,7 @@ namespace Wikiled.News.Monitoring.Retriever
             finally
             {
                 logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
-                await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
+                manager.Release(Ip);
                 httpStateRequest.HttpResponse?.Close();
                 ServicePointManager.ServerCertificateValidationCallback -= ValidateRemoteCertificate;
             }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Utilities.Config;
@@ -10,6 +11,8 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 {
     public class AlphaSessionReader : ISessionReader
     {
+        private readonly ILogger<AlphaSessionReader> logger;
+
         private readonly IApplicationConfiguration configuration;
 
         private readonly ITrackedRetrieval reader;
@@ -20,26 +23,42 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 
         private readonly SemaphoreSlim calls = new SemaphoreSlim(1);
 
-        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader)
+        private readonly RetrieveConfguration httpConfiguration;
+
+        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader, RetrieveConfguration httpConfiguration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
-            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-
+            this.httpConfiguration = httpConfiguration ?? throw new ArgumentNullException(nameof(httpConfiguration));
+            this.loggerFactory = loggerFactory;
+            logger = loggerFactory.CreateLogger<AlphaSessionReader>();
         }
 
-        public ICommentsReader ReadComments(ArticleDefinition article)
+        public Task<CommentData[]> ReadComments(ArticleDefinition article)
         {
-            return new AlphaCommentsReader(loggerFactory, article, reader);
+            return Caller(async () => await new AlphaCommentsReader(loggerFactory, article, reader).ReadAllComments().ToArray());
         }
 
-        public async Task<ArticleText> ReadArticle(ArticleDefinition article)
+        public Task<ArticleText> ReadArticle(ArticleDefinition article)
         {
+            return Caller(() => new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article));
+        }
+
+        private async Task<T> Caller<T>(Func<Task<T>> logic)
+        {
+            if (!initialized)
+            {
+                throw new InvalidOperationException();
+            }
+
             try
             {
                 await calls.WaitAsync().ConfigureAwait(false);
-                await Init().ConfigureAwait(false);
-                var result = await new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article).ConfigureAwait(false);
+                logger.LogDebug("Wait until calling...");
+                await Task.Delay(httpConfiguration.CallDelay).ConfigureAwait(false);
+                var result = await logic().ConfigureAwait(false);
+                logger.LogDebug("Cooldown after calling...");
+                await Task.Delay(httpConfiguration.CallDelay).ConfigureAwait(false);
                 return result;
             }
             finally
@@ -48,7 +67,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             }
         }
 
-        private async Task Init()
+        public async Task Init()
         {
             if (initialized)
             {

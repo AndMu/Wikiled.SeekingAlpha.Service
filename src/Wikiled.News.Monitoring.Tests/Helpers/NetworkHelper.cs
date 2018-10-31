@@ -1,16 +1,22 @@
 ﻿using System.Net;
 using Autofac;
 using Wikiled.News.Monitoring.Containers;
+using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Tests.Helpers
 {
     public class NetworkHelper
     {
-        public NetworkHelper()
+        public NetworkHelper(AlphaModule module = null)
         {
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
+            if (module != null)
+            {
+                builder.RegisterModule(module);
+            }
+
             builder.RegisterModule(
                 new RetrieverModule(new RetrieveConfguration
                 {
@@ -29,8 +35,11 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                     MaxConcurrent = 1
                 }));
 
-            Retrieval = builder.Build().Resolve<ITrackedRetrieval>();
+            Container = builder.Build();
+            Retrieval = Container.Resolve<ITrackedRetrieval>();
         }
+
+        public  IContainer Container { get; }
 
         public ITrackedRetrieval Retrieval { get; }
 

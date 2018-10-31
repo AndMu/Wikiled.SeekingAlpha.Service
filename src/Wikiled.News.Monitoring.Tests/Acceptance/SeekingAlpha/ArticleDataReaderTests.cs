@@ -6,6 +6,7 @@ using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
+using Wikiled.News.Monitoring.Tests.Helpers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
 {
@@ -19,10 +20,8 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         [SetUp]
         public void SetUp()
         {
-            ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterModule(new AlphaModule("AAPL"));
-            builder.RegisterModule<MainModule>();
-            container = builder.Build();
+            var helper =  new NetworkHelper(new AlphaModule("AAPL"));
+            container = helper.Container;
             instance = container.Resolve<IArticleDataReader>();
         }
 

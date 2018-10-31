@@ -24,9 +24,11 @@ namespace Wikiled.News.Monitoring.Persistency
         {
             logger.LogInformation("Saving: {0}", article.Definition.Title);
             string output = JsonConvert.SerializeObject(article, Formatting.Indented);
-            var file = Path.Combine(path, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
+            var currentPath = Path.Combine(path, article.Definition.Feed.Category);
+            var file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
             lock (syncRoot)
             {
+                currentPath.EnsureDirectoryExistence();
                 File.WriteAllText(file, output);
             }
         }

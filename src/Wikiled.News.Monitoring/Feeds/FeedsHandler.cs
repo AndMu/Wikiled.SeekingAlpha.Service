@@ -17,7 +17,7 @@ namespace Wikiled.News.Monitoring.Feeds
         public FeedsHandler(ILogger<FeedsHandler> logger, FeedName[] feeds)
         {
             this.feeds = feeds ?? throw new ArgumentNullException(nameof(feeds));
-            this.logger = logger;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public IObservable<ArticleDefinition> GetArticles()
