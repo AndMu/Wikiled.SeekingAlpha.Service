@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -7,6 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Wikiled.News.Monitoring.Containers;
+using Wikiled.News.Monitoring.Containers.Alpha;
+using Wikiled.News.Monitoring.Retriever;
 using Wikiled.Server.Core.Errors;
 using Wikiled.Server.Core.Helpers;
 using Wikiled.Server.Core.Middleware;
@@ -83,10 +87,28 @@ namespace Wikiled.SeekingAlpha.Service
 
             // needed to load configuration from appsettings.json
             services.AddOptions();
-            //services.RegisterConfiguration<ServicesConfig>(Configuration.GetSection("Services"));
 
             // Create the container builder.
             var builder = new ContainerBuilder();
+            builder.RegisterModule<MainModule>();
+            builder.RegisterModule(new AlphaModule("AAPL", "AMD", "GOOG", "AAPL"));
+            builder.RegisterModule(
+                new RetrieverModule(new RetrieveConfguration
+                {
+                    LongRetryDelay = 60 * 20,
+                    CallDelay = 30000,
+                    LongRetryCodes = new[] { HttpStatusCode.Forbidden, },
+                    RetryCodes = new[]
+                    {
+                        HttpStatusCode.Forbidden,
+                        HttpStatusCode.RequestTimeout, // 408
+                        HttpStatusCode.InternalServerError, // 500
+                        HttpStatusCode.BadGateway, // 502
+                        HttpStatusCode.ServiceUnavailable, // 503
+                        HttpStatusCode.GatewayTimeout // 504
+                    },
+                    MaxConcurrent = 1
+                }));
             var appContainer = builder.Build();
 
             logger.LogInformation("Ready!");
