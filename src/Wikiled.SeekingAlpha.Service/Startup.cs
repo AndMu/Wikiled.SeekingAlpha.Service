@@ -1,16 +1,19 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Reactive.Disposables;
+using System.Reflection;
+using Wikiled.Common.Extensions;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
-using Wikiled.News.Monitoring.Retriever;
+using Wikiled.News.Monitoring.Monitoring;
+using Wikiled.News.Monitoring.Persistency;
+using Wikiled.SeekingAlpha.Service.Config;
 using Wikiled.Server.Core.Errors;
 using Wikiled.Server.Core.Helpers;
 using Wikiled.Server.Core.Middleware;
@@ -21,23 +24,17 @@ namespace Wikiled.SeekingAlpha.Service
     {
         private readonly ILogger<Startup> logger;
 
-        private readonly ILoggerFactory loggerFactory;
+        private CompositeDisposable disposable = new CompositeDisposable();
 
         public Startup(ILoggerFactory loggerFactory, IHostingEnvironment env)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            var builder = new ConfigurationBuilder()
+            IConfigurationBuilder builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
             Env = env;
-            this.loggerFactory = loggerFactory;
             logger = loggerFactory.CreateLogger<Startup>();
             Configuration.ChangeNlog();
             logger.LogInformation($"Starting: {Assembly.GetExecutingAssembly().GetName().Version}");
@@ -48,7 +45,7 @@ namespace Wikiled.SeekingAlpha.Service
         public IHostingEnvironment Env { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -58,13 +55,14 @@ namespace Wikiled.SeekingAlpha.Service
             {
                 //app.UseHsts();
             }
-
+            
             //app.UseHttpsRedirection();
             app.UseCors("CorsPolicy");
             app.UseExceptionHandlingMiddleware();
             app.UseHttpStatusCodeExceptionMiddleware();
             app.UseRequestLogging();
             app.UseMvc();
+            applicationLifetime.ApplicationStopping.Register(OnShutdown, disposable);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -88,32 +86,31 @@ namespace Wikiled.SeekingAlpha.Service
             // needed to load configuration from appsettings.json
             services.AddOptions();
 
+            MonitorConfig config = services.RegisterConfiguration<MonitorConfig>(Configuration.GetSection("Monitor"));
+
             // Create the container builder.
-            var builder = new ContainerBuilder();
+            ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
-            builder.RegisterModule(new AlphaModule("AAPL", "AMD", "GOOG", "AAPL"));
-            builder.RegisterModule(
-                new RetrieverModule(new RetrieveConfguration
-                {
-                    LongRetryDelay = 60 * 20,
-                    CallDelay = 30000,
-                    LongRetryCodes = new[] { HttpStatusCode.Forbidden, },
-                    RetryCodes = new[]
-                    {
-                        HttpStatusCode.Forbidden,
-                        HttpStatusCode.RequestTimeout, // 408
-                        HttpStatusCode.InternalServerError, // 500
-                        HttpStatusCode.BadGateway, // 502
-                        HttpStatusCode.ServiceUnavailable, // 503
-                        HttpStatusCode.GatewayTimeout // 504
-                    },
-                    MaxConcurrent = 1
-                }));
-            var appContainer = builder.Build();
+            builder.RegisterModule(new AlphaModule(config.Stocks));
+            builder.RegisterModule(new RetrieverModule(config.Service));
+            IContainer appContainer = builder.Build();
+
+            IArticlesMonitor monitor = appContainer.Resolve<IArticlesMonitor>();
+            config.Location.EnsureDirectoryExistence();
+            IArticlesPersistency persistency = appContainer.Resolve<IArticlesPersistency>(new NamedParameter("path", config.Location));
+            IDisposable start = monitor.Start().Subscribe(item => persistency.Save(item));
+            IDisposable stop = monitor.Monitor().Subscribe(item => persistency.Save(item));
+            disposable.Add(start);
+            disposable.Add(stop);
 
             logger.LogInformation("Ready!");
             // Create the IServiceProvider based on the container.
             return new AutofacServiceProvider(appContainer);
+        }
+
+        private void OnShutdown(object toDispose)
+        {
+            ((IDisposable)toDispose).Dispose();
         }
     }
 }

@@ -14,6 +14,8 @@
     <PackageReference Include="NLog" Version="4.5.10" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Reactive" Version="4.1.2" />
+    <PackageReference Include="Wikiled.Sentiment.Api" Version="1.1.24" />
     <PackageReference Include="Wikiled.Server.Core" Version="1.2.10" />
   </ItemGroup>
 
@@ -25,6 +27,10 @@
     <Content Update="nlog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Persistency
 {
-    public class ArticlesPersistency
+    public class ArticlesPersistency : IArticlesPersistency
     {
         private readonly ILogger<ArticlesPersistency> logger;
 

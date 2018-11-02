@@ -3,6 +3,7 @@ using Autofac;
 using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Monitoring;
+using Wikiled.News.Monitoring.Persistency;
 using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
@@ -23,6 +24,9 @@ namespace Wikiled.News.Monitoring.Containers
             builder.RegisterInstance(TaskPoolScheduler.Default).As<IScheduler>();
             builder.RegisterType<ArticlesMonitor>().As<IArticlesMonitor>();
             builder.RegisterType<FeedsHandler>().As<IFeedsHandler>();
+
+            builder.RegisterType<ArticlesPersistency>().As<IArticlesPersistency>();
+            
         }
     }
 }
