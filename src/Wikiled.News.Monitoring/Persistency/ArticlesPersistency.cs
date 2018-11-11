@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Wikiled.Common.Extensions;
@@ -20,7 +21,7 @@ namespace Wikiled.News.Monitoring.Persistency
             this.path = path;
         }
 
-        public void Save(Article article)
+        public Task Save(Article article)
         {
             logger.LogInformation("Saving: {0}", article.Definition.Title);
             string output = JsonConvert.SerializeObject(article, Formatting.Indented);
@@ -31,6 +32,8 @@ namespace Wikiled.News.Monitoring.Persistency
                 currentPath.EnsureDirectoryExistence();
                 File.WriteAllText(file, output);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

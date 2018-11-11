@@ -12,36 +12,39 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
     {
         private readonly ISentimentAnalysis sentiment;
 
-        private readonly ConcurrentDictionary<string, ITracker> articleTrackers = new ConcurrentDictionary<string, ITracker>(StringComparer.OrdinalIgnoreCase);
+        private readonly Func<ITracker> trackerFactory;
+
+        private readonly ConcurrentDictionary<string, Lazy<ITracker>> articleTrackers = new ConcurrentDictionary<string, Lazy<ITracker>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<TrackingInstance> logger;
 
         public TrackingInstance(ILogger<TrackingInstance> logger, ISentimentAnalysis sentiment, Func<ITracker> trackerFactory)
         {
             this.sentiment = sentiment ?? throw new ArgumentNullException(nameof(sentiment));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.trackerFactory = trackerFactory;
+            this.logger = logger;
         }
 
         public async Task Save(Article article)
         {
-            throw new NotImplementedException();
             try
             {
-            //    article.Comments[0].
-            //    var sentimentValue = await sentiment.Measure(tweet.Text).ConfigureAwait(false);
-            //    var tweetItem = Tweet.GenerateTweetFromDTO(tweet);
-            //    var saveTask = Task.Run(() => persistency?.Save(tweetItem, sentimentValue));
-            //    foreach (var tracker in Trackers)
-            //    {
-            //        tracker.AddRating(tweet.Text, sentimentValue);
-            //    }
+                var tracker = Resolve(article.Definition.Topic);
+                if (!tracker.IsTracked(article.Definition.Id))
+                {
+                    var sentimentValue = await sentiment.Measure(article.ArticleText.Text).ConfigureAwait(false);
+                    var date = article.Definition.Date ?? DateTime.UtcNow;
+                    tracker.AddRating(new RatingRecord(article.Definition.Id, date, sentimentValue));
+                }
 
-            //    if (articleTrackers.TryGetValue(tweet.CreatedBy.Name, out var trackerUser))
-            //    {
-            //        trackerUser.AddRating(tweet.CreatedBy.Name, sentimentValue);
-            //    }
-
-            //    await saveTask.ConfigureAwait(false);
+                foreach (var comment in article.Comments)
+                {
+                    if (!tracker.IsTracked(comment.Id))
+                    {
+                        var sentimentValue = await sentiment.Measure(comment.Text).ConfigureAwait(false);
+                        tracker.AddRating(new RatingRecord(comment.Id, comment.Date, sentimentValue));
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -56,8 +59,8 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                 throw new ArgumentNullException(nameof(key));
             }
 
-            articleTrackers.TryGetValue(key, out var value);
-            return value;
+            var result = articleTrackers.GetOrAdd(key, new Lazy<ITracker>(() => trackerFactory()));
+            return result.Value;
         }
     }
 }

@@ -1,10 +1,8 @@
 using System;
-using Microsoft.Extensions.Logging.Abstractions;
+using Autofac;
 using NUnit.Framework;
-using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Data;
-using Wikiled.News.Monitoring.Readers.SeekingAlpha;
-using Wikiled.News.Monitoring.Retriever;
+using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Tests.Helpers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
@@ -12,7 +10,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
     [TestFixture]
     public abstract class BaseAlphaTests
     {
-        public AlphaSessionReader Session { get; private set; }
+        public ISessionReader Session { get; private set; }
 
         public NetworkHelper Helper { get; private set; }
 
@@ -25,10 +23,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
             Article = new ArticleDefinition();
             Article.Id = "4211146";
             Article.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
-            Session = new AlphaSessionReader(
-                new NullLoggerFactory(),
-                new ApplicationConfiguration(),
-                Helper.Retrieval);
+            Session = Helper.Container.Resolve<ISessionReader>();
         }
 
         [TearDown]

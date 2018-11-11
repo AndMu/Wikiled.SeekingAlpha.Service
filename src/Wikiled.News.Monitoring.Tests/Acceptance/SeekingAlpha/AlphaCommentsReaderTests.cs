@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -10,8 +9,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         [Test]
         public async Task ReadComments()
         {
-            var commentsReader = Session.ReadComments(Article);
-            var comments = await commentsReader.ReadAllComments().ToArray();
+            var comments = await Session.ReadComments(Article);
             Assert.Greater(comments.Length, 100);
         }
     }

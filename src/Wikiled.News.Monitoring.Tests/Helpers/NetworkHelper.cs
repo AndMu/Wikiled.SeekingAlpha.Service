@@ -18,7 +18,8 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
             }
 
             builder.RegisterModule(
-                new RetrieverModule(new RetrieveConfguration
+                new RetrieverModule(
+                    new RetrieveConfguration
                 {
                     LongRetryDelay = 1000,
                     CallDelay = 1000,
@@ -35,6 +36,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                     MaxConcurrent = 1
                 }));
 
+            builder.RegisterModule(new AlphaModule("AMD"));
             Container = builder.Build();
             Retrieval = Container.Resolve<ITrackedRetrieval>();
         }
