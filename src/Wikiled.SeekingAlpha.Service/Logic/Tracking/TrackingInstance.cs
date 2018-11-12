@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Wikiled.MachineLearning.Mathematics.Tracking;
@@ -30,19 +34,29 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
             try
             {
                 var tracker = Resolve(article.Definition.Topic);
+                Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
                 if (!tracker.IsTracked(article.Definition.Id))
                 {
-                    var sentimentValue = await sentiment.Measure(article.ArticleText.Text).ConfigureAwait(false);
                     var date = article.Definition.Date ?? DateTime.UtcNow;
-                    tracker.AddRating(new RatingRecord(article.Definition.Id, date, sentimentValue));
+                    texts[article.Definition.Id] = (date, article.ArticleText.Text);
                 }
 
                 foreach (var comment in article.Comments)
                 {
                     if (!tracker.IsTracked(comment.Id))
                     {
-                        var sentimentValue = await sentiment.Measure(comment.Text).ConfigureAwait(false);
-                        tracker.AddRating(new RatingRecord(comment.Id, comment.Date, sentimentValue));
+                        texts[article.Definition.Id] = (comment.Date, comment.Text);
+                    }
+                }
+
+                if (texts.Count > 0)
+                {
+                    var request = texts.Select(item => (item.Key, item.Value.Text)).ToArray();
+                    var sentimentValue = await sentiment.Measure(request, CancellationToken.None).ToArray();
+                    foreach (var tuple in sentimentValue)
+                    {
+                        var result = texts[tuple.Item1];
+                        tracker.AddRating(new RatingRecord(tuple.Item1, result.Date, tuple.Item2));
                     }
                 }
             }
