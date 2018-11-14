@@ -6,14 +6,20 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reflection;
 using Wikiled.Common.Extensions;
+using Wikiled.Common.Net.Client;
+using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Monitoring;
 using Wikiled.News.Monitoring.Persistency;
 using Wikiled.SeekingAlpha.Service.Config;
+using Wikiled.SeekingAlpha.Service.Logic.Tracking;
+using Wikiled.Sentiment.Api.Request;
+using Wikiled.Sentiment.Api.Service;
 using Wikiled.Server.Core.Errors;
 using Wikiled.Server.Core.Helpers;
 using Wikiled.Server.Core.Middleware;
@@ -92,9 +98,14 @@ namespace Wikiled.SeekingAlpha.Service
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
             builder.RegisterModule(new AlphaModule(config.Stocks));
-            builder.RegisterModule(new RetrieverModule(config.Service));
-            IContainer appContainer = builder.Build();
+            builder.RegisterModule(new RetrieverModule(config.Service));;
+            builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
+            
+            builder.Populate(services);
 
+            SetupTracking(builder);
+
+            IContainer appContainer = builder.Build();
             IArticlesMonitor monitor = appContainer.Resolve<IArticlesMonitor>();
             config.Location.EnsureDirectoryExistence();
             IArticlesPersistency persistency = appContainer.Resolve<IArticlesPersistency>(new NamedParameter("path", config.Location));
@@ -106,6 +117,31 @@ namespace Wikiled.SeekingAlpha.Service
             logger.LogInformation("Ready!");
             // Create the IServiceProvider based on the container.
             return new AutofacServiceProvider(appContainer);
+        }
+
+        private void SetupTracking(ContainerBuilder builder)
+        {
+            builder.RegisterType<Tracker>().As<ITracker>();
+            builder.RegisterType<TrackingInstance>().As<ITrackingInstance>();
+            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(1)));
+        }
+
+        private void SetupServices(ContainerBuilder builder, SentimentConfig sentiment)
+        {
+            logger.LogInformation("Setting up services...");
+            builder.Register(context => new StreamApiClientFactory(context.Resolve<ILoggerFactory>(),
+                                                                   new HttpClient
+                                                                   {
+                                                                       Timeout = TimeSpan.FromMinutes(10)
+                                                                   },
+                                                                   new Uri(sentiment.Url)))
+                .As<IStreamApiClientFactory>();
+            var request = new WorkRequest();
+            request.CleanText = true;
+            request.Domain = sentiment.Domain;
+            builder.RegisterInstance(request);
+            builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
+            logger.LogInformation("Register sentiment: {0} {1}", sentiment.Url, sentiment.Domain);
         }
 
         private void OnShutdown(object toDispose)
