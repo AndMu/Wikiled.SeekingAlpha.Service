@@ -37,7 +37,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
         {
             try
             {
-                var saveTask = persistency.Save(article);
+                var saveTask = Task.Run(() => persistency.Save(article));   
                 var tracker = Resolve(article.Definition.Topic);
                 Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
                 if (!tracker.IsTracked(article.Definition.Id))
