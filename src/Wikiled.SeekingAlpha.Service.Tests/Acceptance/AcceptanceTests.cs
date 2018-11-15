@@ -36,7 +36,7 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         {
             var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
             var result = await analysis.GetTrackingResults("AMD", CancellationToken.None).ConfigureAwait(false);
-            Assert.AreEqual("$AMD", result.Keyword);
+            Assert.AreEqual("AMD", result.Keyword);
             Assert.AreEqual(0, result.Total);
         }
     }

@@ -44,7 +44,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             int[] steps = { 24, 12, 6, 1 };
             foreach (int step in steps)
             {
-                result.Sentiment[$"{step}H"] = new TrackingResult { Average = tracker.AverageSentiment(step), TotalMessages = tracker.Count(lastHours: step) };
+                result.Sentiment[$"{step}H"] = new TrackingResult { Average = tracker.CalculateAverageRating(step), TotalMessages = tracker.Count(lastHours: step) };
             }
 
             result.Total = tracker.Count(false);

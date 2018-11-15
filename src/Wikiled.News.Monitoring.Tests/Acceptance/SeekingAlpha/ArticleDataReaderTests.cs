@@ -20,7 +20,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         [SetUp]
         public void SetUp()
         {
-            var helper =  new NetworkHelper(new AlphaModule("AAPL"));
+            var helper =  new NetworkHelper(new AlphaModule("Data", "AAPL"));
             container = helper.Container;
             instance = container.Resolve<IArticleDataReader>();
         }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Persistency;
 using Wikiled.Sentiment.Api.Service;
 
 namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
@@ -22,17 +23,21 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
 
         private readonly ILogger<TrackingInstance> logger;
 
-        public TrackingInstance(ILogger<TrackingInstance> logger, ISentimentAnalysis sentiment, Func<ITracker> trackerFactory)
+        private readonly IArticlesPersistency persistency;
+
+        public TrackingInstance(ILogger<TrackingInstance> logger, ISentimentAnalysis sentiment, Func<ITracker> trackerFactory, IArticlesPersistency persistency)
         {
             this.sentiment = sentiment ?? throw new ArgumentNullException(nameof(sentiment));
-            this.trackerFactory = trackerFactory;
-            this.logger = logger;
+            this.trackerFactory = trackerFactory ?? throw new ArgumentNullException(nameof(trackerFactory));
+            this.persistency = persistency ?? throw new ArgumentNullException(nameof(persistency));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task Save(Article article)
         {
             try
             {
+                var saveTask = persistency.Save(article);
                 var tracker = Resolve(article.Definition.Topic);
                 Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
                 if (!tracker.IsTracked(article.Definition.Id))
@@ -59,6 +64,8 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                         tracker.AddRating(new RatingRecord(tuple.Item1, result.Date, tuple.Item2));
                     }
                 }
+
+                await saveTask.ConfigureAwait(false);
             }
             catch (Exception ex)
             {

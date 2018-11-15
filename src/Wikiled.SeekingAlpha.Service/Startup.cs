@@ -30,7 +30,7 @@ namespace Wikiled.SeekingAlpha.Service
     {
         private readonly ILogger<Startup> logger;
 
-        private CompositeDisposable disposable = new CompositeDisposable();
+        private readonly CompositeDisposable disposable = new CompositeDisposable();
 
         public Startup(ILoggerFactory loggerFactory, IHostingEnvironment env)
         {
@@ -93,22 +93,23 @@ namespace Wikiled.SeekingAlpha.Service
             services.AddOptions();
 
             MonitorConfig config = services.RegisterConfiguration<MonitorConfig>(Configuration.GetSection("Monitor"));
+            SentimentConfig sentimentConfig = services.RegisterConfiguration<SentimentConfig>(Configuration.GetSection("sentiment"));
 
             // Create the container builder.
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
-            builder.RegisterModule(new AlphaModule(config.Stocks));
+            builder.RegisterModule(new AlphaModule(config.Location, config.Stocks));
             builder.RegisterModule(new RetrieverModule(config.Service));;
             builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
             
             builder.Populate(services);
-
+            SetupServices(builder, sentimentConfig);
             SetupTracking(builder);
 
             IContainer appContainer = builder.Build();
             IArticlesMonitor monitor = appContainer.Resolve<IArticlesMonitor>();
             config.Location.EnsureDirectoryExistence();
-            IArticlesPersistency persistency = appContainer.Resolve<IArticlesPersistency>(new NamedParameter("path", config.Location));
+            IArticlesPersistency persistency = appContainer.Resolve<ITrackingInstance>();
             IDisposable start = monitor.Start().Subscribe(item => persistency.Save(item));
             IDisposable stop = monitor.Monitor().Subscribe(item => persistency.Save(item));
             disposable.Add(start);

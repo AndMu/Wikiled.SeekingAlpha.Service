@@ -32,5 +32,4 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
             Helper.Container.Dispose();
         }
     }
-
 }

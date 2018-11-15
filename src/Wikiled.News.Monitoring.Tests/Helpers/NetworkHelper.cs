@@ -36,7 +36,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                     MaxConcurrent = 1
                 }));
 
-            builder.RegisterModule(new AlphaModule("AMD"));
+            builder.RegisterModule(new AlphaModule("Data", "AMD"));
             Container = builder.Build();
             Retrieval = Container.Resolve<ITrackedRetrieval>();
         }

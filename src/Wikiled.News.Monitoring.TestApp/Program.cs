@@ -23,7 +23,7 @@ namespace Wikiled.News.Monitoring.TestApp
             log.Info("Starting {0} version utility...", Assembly.GetExecutingAssembly().GetName().Version);
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
-            builder.RegisterModule(new AlphaModule("AAPL", "AMD", "GOOG", "AAPL"));
+            builder.RegisterModule(new AlphaModule("Articles", "AAPL", "AMD", "GOOG", "AAPL"));
             builder.RegisterModule(
                 new RetrieverModule(new RetrieveConfguration
                 {
@@ -49,7 +49,7 @@ namespace Wikiled.News.Monitoring.TestApp
 
             IArticlesMonitor monitor = container.Resolve<IArticlesMonitor>();
             "Articles".EnsureDirectoryExistence();
-            ArticlesPersistency persistency = new ArticlesPersistency(loggerFactory.CreateLogger<ArticlesPersistency>(), "Articles");
+            var persistency = container.Resolve<IArticlesPersistency>();
             monitor.Start().Subscribe(item => persistency.Save(item));
             monitor.Monitor().Subscribe(item => persistency.Save(item));
             Console.ReadLine();
