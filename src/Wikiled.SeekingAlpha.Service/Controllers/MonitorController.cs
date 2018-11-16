@@ -41,6 +41,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             {
                 Keyword = keyword
             };
+
             int[] steps = { 24, 12, 6, 1 };
             foreach (int step in steps)
             {

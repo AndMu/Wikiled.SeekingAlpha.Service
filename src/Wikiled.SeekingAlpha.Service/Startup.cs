@@ -123,7 +123,7 @@ namespace Wikiled.SeekingAlpha.Service
         private void SetupTracking(ContainerBuilder builder)
         {
             builder.RegisterType<Tracker>().As<ITracker>();
-            builder.RegisterType<TrackingInstance>().As<ITrackingInstance>();
+            builder.RegisterType<TrackingInstance>().As<ITrackingInstance>().SingleInstance();
             builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(1)));
         }
 
