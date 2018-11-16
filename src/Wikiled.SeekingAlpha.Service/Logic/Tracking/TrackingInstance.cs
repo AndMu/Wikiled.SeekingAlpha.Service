@@ -37,7 +37,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
         {
             try
             {
-                logger.LogDebug("Saving: {0}", article.Definition.Id);
+                logger.LogDebug("Saving: {0} {1}", article.Definition.Feed.Category, article.Definition.Id);
                 var saveTask = Task.Run(() => persistency.Save(article));   
                 var tracker = Resolve(article.Definition.Feed.Category);
                 Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
@@ -70,6 +70,11 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                     }
                 }
 
+                logger.LogDebug("[{0}] Total: {1} with sentiment: {2} Average: {3}",
+                                article.Definition.Feed.Category,
+                                tracker.Count(false),
+                                tracker.Count(),
+                                tracker.CalculateAverageRating());
                 await saveTask.ConfigureAwait(false);
             }
             catch (Exception ex)
