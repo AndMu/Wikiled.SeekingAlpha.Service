@@ -37,25 +37,30 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
         {
             try
             {
+                logger.LogDebug("Saving: {0}", article.Definition.Id);
                 var saveTask = Task.Run(() => persistency.Save(article));   
                 var tracker = Resolve(article.Definition.Topic);
                 Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
                 if (!tracker.IsTracked(article.Definition.Id))
                 {
+                    logger.LogDebug("Tracking: {0}", article.Definition.Id);
                     var date = article.Definition.Date ?? DateTime.UtcNow;
                     texts[article.Definition.Id] = (date, article.ArticleText.Text);
                 }
 
+                logger.LogDebug("Total comments: {0}", article.Comments.Length);
                 foreach (var comment in article.Comments)
                 {
                     if (!tracker.IsTracked(comment.Id))
                     {
+                        logger.LogDebug("Tracking: {0}", comment.Id);
                         texts[article.Definition.Id] = (comment.Date, comment.Text);
                     }
                 }
 
                 if (texts.Count > 0)
                 {
+                    logger.LogDebug("Checking sentiment: {0}", texts.Count);
                     var request = texts.Select(item => (item.Key, item.Value.Text)).ToArray();
                     var sentimentValue = await sentiment.Measure(request, CancellationToken.None).ToArray();
                     foreach (var tuple in sentimentValue)
