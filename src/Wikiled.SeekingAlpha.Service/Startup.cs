@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reflection;
@@ -61,7 +62,7 @@ namespace Wikiled.SeekingAlpha.Service
             {
                 //app.UseHsts();
             }
-            
+
             //app.UseHttpsRedirection();
             app.UseCors("CorsPolicy");
             app.UseExceptionHandlingMiddleware();
@@ -99,32 +100,38 @@ namespace Wikiled.SeekingAlpha.Service
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
             builder.RegisterModule(new AlphaModule(config.Location, config.Stocks));
-            builder.RegisterModule(new RetrieverModule(config.Service));;
+            builder.RegisterModule(new RetrieverModule(config.Service)); ;
             builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
-            
+
             builder.Populate(services);
             SetupServices(builder, sentimentConfig);
-            SetupTracking(builder);
+            SetupTracking(builder, config.Location);
 
             IContainer appContainer = builder.Build();
             IArticlesMonitor monitor = appContainer.Resolve<IArticlesMonitor>();
             config.Location.EnsureDirectoryExistence();
-            IArticlesPersistency persistency = appContainer.Resolve<ITrackingInstance>();
+            IArticlesPersistency persistency = appContainer.Resolve<TrackingInstance>();
             IDisposable start = monitor.Start().Subscribe(item => persistency.Save(item));
             IDisposable stop = monitor.Monitor().Subscribe(item => persistency.Save(item));
             disposable.Add(start);
             disposable.Add(stop);
+            appContainer.Resolve<PersistencyTracking>();
 
             logger.LogInformation("Ready!");
             // Create the IServiceProvider based on the container.
             return new AutofacServiceProvider(appContainer);
         }
 
-        private void SetupTracking(ContainerBuilder builder)
+        private void SetupTracking(ContainerBuilder builder, string persistency)
         {
             builder.RegisterType<Tracker>().As<ITracker>();
-            builder.RegisterType<TrackingInstance>().As<ITrackingInstance>().SingleInstance();
-            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(1)));
+            builder.RegisterType<TrackingInstance>().SingleInstance();
+            builder.RegisterType<ExpireTracking>().As<ITrackingRegister>().SingleInstance();
+            builder.RegisterType<TrackingStream>().As<ITrackingRegister>().As<IRatingStream>().SingleInstance();
+            builder.RegisterType<PersistencyTracking>().SingleInstance();
+            builder.RegisterType<TrackingManager>().As<ITrackingManager>().SingleInstance();
+            builder.RegisterType<TrackerFactory>().As<ITrackerFactory>().SingleInstance();
+            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(1), Path.Combine(persistency, "ratings.csv")));
         }
 
         private void SetupServices(ContainerBuilder builder, SentimentConfig sentiment)
@@ -137,9 +144,11 @@ namespace Wikiled.SeekingAlpha.Service
                                                                    },
                                                                    new Uri(sentiment.Url)))
                 .As<IStreamApiClientFactory>();
-            var request = new WorkRequest();
-            request.CleanText = true;
-            request.Domain = sentiment.Domain;
+            WorkRequest request = new WorkRequest
+            {
+                CleanText = true,
+                Domain = sentiment.Domain
+            };
             builder.RegisterInstance(request);
             builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
             logger.LogInformation("Register sentiment: {0} {1}", sentiment.Url, sentiment.Domain);

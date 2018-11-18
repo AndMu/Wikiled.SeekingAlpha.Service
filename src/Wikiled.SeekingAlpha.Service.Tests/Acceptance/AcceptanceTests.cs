@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Wikiled.Common.Net.Client;
+using Wikiled.SeekingAlpha.Api.Request;
 using Wikiled.SeekingAlpha.Api.Service;
 using Wikiled.Server.Core.Testing.Server;
 
@@ -35,7 +36,7 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         public async Task Measure()
         {
             var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
-            var result = await analysis.GetTrackingResults("AMD", CancellationToken.None).ConfigureAwait(false);
+            var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article), CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual("AMD", result.Keyword);
             Assert.AreEqual(0, result.Total);
         }

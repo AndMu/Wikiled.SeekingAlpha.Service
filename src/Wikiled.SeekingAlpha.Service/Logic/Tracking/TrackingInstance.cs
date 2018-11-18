@@ -13,23 +13,21 @@ using Wikiled.Sentiment.Api.Service;
 
 namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
 {
-    public class TrackingInstance : ITrackingInstance
+    public class TrackingInstance : IArticlesPersistency
     {
         private readonly ISentimentAnalysis sentiment;
-
-        private readonly Func<ITracker> trackerFactory;
-
-        private readonly ConcurrentDictionary<string, Lazy<ITracker>> articleTrackers = new ConcurrentDictionary<string, Lazy<ITracker>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<TrackingInstance> logger;
 
         private readonly IArticlesPersistency persistency;
 
-        public TrackingInstance(ILogger<TrackingInstance> logger, ISentimentAnalysis sentiment, Func<ITracker> trackerFactory, IArticlesPersistency persistency)
+        private readonly ITrackingManager trackingManager;
+
+        public TrackingInstance(ILogger<TrackingInstance> logger, ISentimentAnalysis sentiment, IArticlesPersistency persistency, ITrackingManager trackingManager)
         {
             this.sentiment = sentiment ?? throw new ArgumentNullException(nameof(sentiment));
-            this.trackerFactory = trackerFactory ?? throw new ArgumentNullException(nameof(trackerFactory));
             this.persistency = persistency ?? throw new ArgumentNullException(nameof(persistency));
+            this.trackingManager = trackingManager;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -39,22 +37,23 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
             {
                 logger.LogDebug("Saving: {0} {1}", article.Definition.Feed.Category, article.Definition.Id);
                 var saveTask = Task.Run(() => persistency.Save(article));   
-                var tracker = Resolve(article.Definition.Feed.Category);
-                Dictionary<string, (DateTime Date, string Text)> texts = new Dictionary<string, (DateTime Date, string Text)>();
-                if (!tracker.IsTracked(article.Definition.Id))
+                var trackerArticle = trackingManager.Resolve(article.Definition.Feed.Category, "Article");
+                var trackerComments = trackingManager.Resolve(article.Definition.Feed.Category, "Comment");
+                Dictionary<string, (string Text, Action<double?> Rating)> texts = new Dictionary<string, (string Text, Action<double?> Rating)>();
+                if (!trackerArticle.IsTracked(article.Definition.Id))
                 {
                     logger.LogDebug("Tracking: {0}", article.Definition.Id);
                     var date = article.Definition.Date ?? DateTime.UtcNow;
-                    texts[article.Definition.Id] = (date, article.ArticleText.Text);
+                    texts[article.Definition.Id] = (article.ArticleText.Text, rating => trackerArticle.AddRating(new RatingRecord(article.Definition.Id, "Article", date, rating)));
                 }
 
                 logger.LogDebug("Total comments: {0}", article.Comments.Length);
                 foreach (var comment in article.Comments)
                 {
-                    if (!tracker.IsTracked(comment.Id))
+                    if (!trackerComments.IsTracked(comment.Id))
                     {
                         logger.LogDebug("Tracking: {0}", comment.Id);
-                        texts[comment.Id] = (comment.Date, comment.Text);
+                        texts[comment.Id] = (comment.Text, rating => trackerArticle.AddRating(new RatingRecord(comment.Id, "Comment", comment.Date, rating)));
                     }
                 }
 
@@ -66,15 +65,23 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                     foreach (var tuple in sentimentValue)
                     {
                         var result = texts[tuple.Item1];
-                        tracker.AddRating(new RatingRecord(tuple.Item1, result.Date, tuple.Item2));
+                        result.Rating(tuple.Item2);
                     }
                 }
 
-                logger.LogDebug("[{0}] Total: {1} with sentiment: {2} Average: {3}",
-                                article.Definition.Feed.Category,
-                                tracker.Count(false),
-                                tracker.Count(),
-                                tracker.CalculateAverageRating());
+                logger.LogDebug(
+                    "Articles [{0}] Total: {1} with sentiment: {2} Average: {3}",
+                    article.Definition.Feed.Category,
+                    trackerArticle.Count(false),
+                    trackerArticle.Count(),
+                    trackerArticle.CalculateAverageRating());
+
+                logger.LogDebug(
+                    "Comments [{0}] Total: {1} with sentiment: {2} Average: {3}",
+                    article.Definition.Feed.Category,
+                    trackerArticle.Count(false),
+                    trackerArticle.Count(),
+                    trackerArticle.CalculateAverageRating());
                 await saveTask.ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -83,15 +90,6 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
             }
         }
 
-        public ITracker Resolve(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var result = articleTrackers.GetOrAdd(key, new Lazy<ITracker>(() => trackerFactory()));
-            return result.Value;
-        }
+      
     }
 }

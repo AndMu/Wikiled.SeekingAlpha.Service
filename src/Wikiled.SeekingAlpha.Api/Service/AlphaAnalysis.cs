@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Net.Client;
 using Wikiled.MachineLearning.Mathematics.Tracking;
+using Wikiled.SeekingAlpha.Api.Request;
 
 namespace Wikiled.SeekingAlpha.Api.Service
 {
@@ -17,14 +18,19 @@ namespace Wikiled.SeekingAlpha.Api.Service
             client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<TrackingResults> GetTrackingResults(string keyword, CancellationToken token)
+        public async Task<TrackingResults> GetTrackingResults(SentimentRequest request, CancellationToken token)
         {
-            if (keyword is null)
+            if (request?.Name is null)
             {
-                throw new ArgumentNullException(nameof(keyword));
+                throw new ArgumentNullException(nameof(request.Name));
             }
 
-            var result = await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{keyword}", token).ConfigureAwait(false);
+            if (request?.Type is null)
+            {
+                throw new ArgumentNullException(nameof(request.Type));
+            }
+
+            var result = await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{request.Type}/{request.Name}", token).ConfigureAwait(false);
             if (!result.IsSuccess)
             {
                 throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);

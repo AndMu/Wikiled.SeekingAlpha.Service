@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Wikiled.MachineLearning.Mathematics.Tracking;
-using Wikiled.SeekingAlpha.Service.Logic.Tracking;
 using Wikiled.Server.Core.ActionFilters;
 using Wikiled.Server.Core.Controllers;
+using SentimentRequest = Wikiled.SeekingAlpha.Service.Logic.SentimentRequest;
 
 namespace Wikiled.SeekingAlpha.Service.Controllers
 {
@@ -12,34 +12,29 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
     [TypeFilter(typeof(RequestValidationAttribute))]
     public class MonitorController : BaseController
     {
-        private readonly ITrackingInstance tracking;
+        private readonly ITrackingManager tracking;
 
-        public MonitorController(ILoggerFactory loggerFactory, ITrackingInstance tracking)
+        public MonitorController(ILoggerFactory loggerFactory, ITrackingManager tracking)
             : base(loggerFactory)
         {
             this.tracking = tracking ?? throw new ArgumentNullException(nameof(tracking));
         }
 
-        [Route("sentiment/{keyword}")]
+        [Route("sentiment/{type}/{name}")]
         [HttpGet]
-        public IActionResult GetResult(string keyword)
+        public IActionResult GetResult(SentimentRequest request)
         {
-            if (string.IsNullOrEmpty(keyword))
+            if (string.IsNullOrEmpty(request?.Name))
             {
                 Logger.LogWarning("Empty keyword");
                 return NoContent();
             }
 
-            var tracker = tracking.Resolve(keyword);
-            if (tracker == null)
-            {
-                Logger.LogWarning("Unknown keyword + " + keyword);
-                return NotFound("Unknown keyword + " + keyword);
-            }
-
+            var tracker = tracking.Resolve(request.Name, request.Type.ToString());
             TrackingResults result = new TrackingResults
             {
-                Keyword = keyword
+                Keyword = tracker.Name,
+                Type =  tracker.Type
             };
 
             int[] steps = { 24, 12, 6, 1 };
