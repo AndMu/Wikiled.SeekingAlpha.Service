@@ -53,7 +53,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                     if (!trackerComments.IsTracked(comment.Id))
                     {
                         logger.LogDebug("Tracking: {0}", comment.Id);
-                        texts[comment.Id] = (comment.Text, rating => trackerArticle.AddRating(new RatingRecord(comment.Id, comment.Date, rating)));
+                        texts[comment.Id] = (comment.Text, rating => trackerComments.AddRating(new RatingRecord(comment.Id, comment.Date, rating)));
                     }
                 }
 
