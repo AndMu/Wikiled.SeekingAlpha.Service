@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Wikiled.Common.Net" Version="1.1.10" />
-    <PackageReference Include="Wikiled.MachineLearning" Version="2.3.19" />
+    <PackageReference Include="Wikiled.MachineLearning" Version="2.3.21" />
   </ItemGroup>
 
 </Project>
