@@ -62,13 +62,20 @@ namespace Wikiled.News.Monitoring.Monitoring
                 scanned.TryRemove(pair.Key, out _);
             }
 
-            return scanned.Where(item => now.Subtract(item.Value.DateTime).Hours >= 2).Select(item => reader.Read(item.Value.Definition));
+            return scanned.Where(item => now.Subtract(item.Value.DateTime).Hours >= 2).Select(item => Refresh(item.Value));
+        }
+
+        private async Task<Article> Refresh(Article article)
+        {
+            var comments = await reader.ReadComments(article.Definition);
+            article.RefreshComments(comments);
+            return article;
         }
 
         private async Task<Article> ArticleReceived(ArticleDefinition article)
         {
             logger.LogDebug("ArticleReceived: {0}({1})", article.Topic, article.Id);
-            if (scanned.TryGetValue(article.ToString(), out var _))
+            if (scanned.TryGetValue(article.ToString(), out _))
             {
                 logger.LogDebug("Article already processed: {0}", article.Id);
                 return null;
