@@ -45,7 +45,7 @@ namespace Wikiled.News.Monitoring.Feeds
                             article.Title = item.Title;
                             article.Feed = task.Feed;
                             article.Element = item.SpecificItem.Element;
-                            logger.LogDebug("Found definition {0}...", article.Title);
+                            logger.LogDebug("Found definition {0} [{1}]...", article.Title, article.Date);
                             observer.OnNext(article);
                         }
                     }
