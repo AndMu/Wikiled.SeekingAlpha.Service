@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Wikiled.MachineLearning.Mathematics.Tracking;
+using Wikiled.Sentiment.Tracking.Logic;
 using Wikiled.Server.Core.ActionFilters;
 using Wikiled.Server.Core.Controllers;
 using SentimentRequest = Wikiled.SeekingAlpha.Service.Logic.SentimentRequest;
