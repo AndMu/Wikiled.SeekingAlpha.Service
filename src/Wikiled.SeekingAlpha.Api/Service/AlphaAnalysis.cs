@@ -20,6 +20,30 @@ namespace Wikiled.SeekingAlpha.Api.Service
 
         public async Task<TrackingResults> GetTrackingResults(SentimentRequest request, CancellationToken token)
         {
+            CheckArguments(request);
+            var result = await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{request.Type}/{request.Name}", token).ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
+            }
+
+            return result.Result.Value;
+        }
+
+        public async Task<RatingRecord[]> GetTrackingHistory(SentimentRequest request, int hours, CancellationToken token)
+        {
+            CheckArguments(request);
+            var result = await client.GetRequest<RawResponse<RatingRecord[]>>($"api/monitor/history/{hours}/{request.Type}/{request.Name}", token).ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
+            }
+
+            return result.Result.Value;
+        }
+
+        private static void CheckArguments(SentimentRequest request)
+        {
             if (request?.Name is null)
             {
                 throw new ArgumentNullException(nameof(request.Name));
@@ -29,14 +53,6 @@ namespace Wikiled.SeekingAlpha.Api.Service
             {
                 throw new ArgumentNullException(nameof(request.Type));
             }
-
-            var result = await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{request.Type}/{request.Name}", token).ConfigureAwait(false);
-            if (!result.IsSuccess)
-            {
-                throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
-            }
-
-            return result.Result.Value;
         }
     }
 }

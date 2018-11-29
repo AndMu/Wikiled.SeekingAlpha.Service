@@ -46,5 +46,19 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             result.Total = tracker.Count(false);
             return Ok(result);
         }
+
+        [Route("history/{hours}/{type}/{name}")]
+        [HttpGet]
+        public IActionResult GetResultHistory(SentimentRequest request, int hours)
+        {
+            if (string.IsNullOrEmpty(request?.Name))
+            {
+                Logger.LogWarning("Empty keyword");
+                return NoContent();
+            }
+
+            var tracker = tracking.Resolve(request.Name, request.Type.ToString());
+            return Ok(tracker.GetRatings(hours));
+        }
     }
 }

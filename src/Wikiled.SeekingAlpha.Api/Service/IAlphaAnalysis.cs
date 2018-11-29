@@ -8,5 +8,7 @@ namespace Wikiled.SeekingAlpha.Api.Service
     public interface IAlphaAnalysis
     {
         Task<TrackingResults> GetTrackingResults(SentimentRequest request, CancellationToken token);
+
+        Task<RatingRecord[]> GetTrackingHistory(SentimentRequest request, int hours, CancellationToken token);
     }
 }

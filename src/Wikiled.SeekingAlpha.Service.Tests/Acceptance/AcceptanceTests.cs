@@ -33,12 +33,20 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         }
 
         [Test]
-        public async Task Measure()
+        public async Task GetTrackingResults()
         {
             var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
             var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article), CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual("AMD", result.Keyword);
             Assert.AreEqual(0, result.Total);
+        }
+
+        [Test]
+        public async Task GetTrackingHistory()
+        {
+            var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            var result = await analysis.GetTrackingHistory(new SentimentRequest("AMD", SentimentType.Article), 10, CancellationToken.None).ConfigureAwait(false);
+            Assert.AreEqual(0, result.Length);
         }
     }
 }

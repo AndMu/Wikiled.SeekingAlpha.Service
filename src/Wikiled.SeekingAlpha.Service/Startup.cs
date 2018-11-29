@@ -131,7 +131,7 @@ namespace Wikiled.SeekingAlpha.Service
             builder.RegisterType<PersistencyTracking>().SingleInstance();
             builder.RegisterType<TrackingManager>().As<ITrackingManager>().SingleInstance();
             builder.RegisterType<TrackerFactory>().As<ITrackerFactory>().SingleInstance();
-            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(1), Path.Combine(persistency, "ratings.csv")));
+            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(10), Path.Combine(persistency, "ratings.csv")));
         }
 
         private void SetupServices(ContainerBuilder builder, SentimentConfig sentiment)
