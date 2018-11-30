@@ -126,6 +126,7 @@ namespace Wikiled.SeekingAlpha.Service
         private void SetupTracking(ContainerBuilder builder, string persistency)
         {
             var config = new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(10), Path.Combine(persistency, "ratings.csv"));
+            config.Restore = true;
             builder.RegisterModule(new TrackingModule(config));
             builder.RegisterType<TrackingInstance>().SingleInstance();
         }
