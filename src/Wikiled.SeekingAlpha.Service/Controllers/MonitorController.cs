@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Wikiled.MachineLearning.Mathematics.Tracking;
+using Wikiled.Sentiment.Tracking.Logic;
 using Wikiled.Server.Core.ActionFilters;
 using Wikiled.Server.Core.Controllers;
 using SentimentRequest = Wikiled.SeekingAlpha.Service.Logic.SentimentRequest;
@@ -58,7 +59,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             }
 
             var tracker = tracking.Resolve(request.Name, request.Type.ToString());
-            return Ok(tracker.GetRatings(hours));
+            return Ok(tracker.GetRatings(hours).OrderByDescending(item => item.Date));
         }
     }
 }

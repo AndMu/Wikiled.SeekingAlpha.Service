@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Persistency;
 using Wikiled.Sentiment.Api.Service;
+using Wikiled.Sentiment.Tracking.Logic;
 
 namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
 {

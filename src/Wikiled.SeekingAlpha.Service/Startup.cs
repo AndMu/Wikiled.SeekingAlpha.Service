@@ -12,7 +12,6 @@ using System.Reactive.Disposables;
 using System.Reflection;
 using Wikiled.Common.Extensions;
 using Wikiled.Common.Net.Client;
-using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Monitoring;
@@ -21,6 +20,8 @@ using Wikiled.SeekingAlpha.Service.Config;
 using Wikiled.SeekingAlpha.Service.Logic.Tracking;
 using Wikiled.Sentiment.Api.Request;
 using Wikiled.Sentiment.Api.Service;
+using Wikiled.Sentiment.Tracking.Logic;
+using Wikiled.Sentiment.Tracking.Modules;
 using Wikiled.Server.Core.Errors;
 using Wikiled.Server.Core.Helpers;
 using Wikiled.Server.Core.Middleware;
@@ -115,7 +116,7 @@ namespace Wikiled.SeekingAlpha.Service
             IDisposable stop = monitor.Monitor().Subscribe(item => persistency.Save(item));
             disposable.Add(start);
             disposable.Add(stop);
-            appContainer.Resolve<PersistencyTracking>();
+            
 
             logger.LogInformation("Ready!");
             // Create the IServiceProvider based on the container.
@@ -124,14 +125,10 @@ namespace Wikiled.SeekingAlpha.Service
 
         private void SetupTracking(ContainerBuilder builder, string persistency)
         {
-            builder.RegisterType<Tracker>().As<ITracker>();
+            var config = new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(10), Path.Combine(persistency, "ratings.csv"));
+            config.Restore = true;
+            builder.RegisterModule(new TrackingModule(config));
             builder.RegisterType<TrackingInstance>().SingleInstance();
-            builder.RegisterType<ExpireTracking>().As<ITrackingRegister>().SingleInstance();
-            builder.RegisterType<TrackingStream>().As<ITrackingRegister>().As<IRatingStream>().SingleInstance();
-            builder.RegisterType<PersistencyTracking>().SingleInstance();
-            builder.RegisterType<TrackingManager>().As<ITrackingManager>().SingleInstance();
-            builder.RegisterType<TrackerFactory>().As<ITrackerFactory>().SingleInstance();
-            builder.RegisterInstance(new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(10), Path.Combine(persistency, "ratings.csv")));
         }
 
         private void SetupServices(ContainerBuilder builder, SentimentConfig sentiment)

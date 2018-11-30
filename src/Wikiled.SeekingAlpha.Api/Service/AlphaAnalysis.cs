@@ -2,8 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Net.Client;
-using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.SeekingAlpha.Api.Request;
+using Wikiled.Sentiment.Tracking.Logic;
 
 namespace Wikiled.SeekingAlpha.Api.Service
 {
