@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Wikiled.Sentiment.Tracking.Logic;
@@ -58,7 +59,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             }
 
             var tracker = tracking.Resolve(request.Name, request.Type.ToString());
-            return Ok(tracker.GetRatings(hours));
+            return Ok(tracker.GetRatings(hours).OrderByDescending(item => item.Date));
         }
     }
 }
