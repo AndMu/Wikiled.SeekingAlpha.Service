@@ -21,6 +21,13 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             this.tracking = tracking ?? throw new ArgumentNullException(nameof(tracking));
         }
 
+        [Route("sentimentex")]
+        [HttpPost]
+        public IActionResult GetResultEx([FromBody] SentimentRequest request)
+        {
+            return GetResult(request);
+        }
+
         [Route("sentiment/{type}/{name}")]
         [HttpGet]
         public IActionResult GetResult(SentimentRequest request)

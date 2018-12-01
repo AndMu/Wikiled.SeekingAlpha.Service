@@ -12,6 +12,8 @@ namespace Wikiled.SeekingAlpha.Api.Request
 
         public SentimentType Type { get; }
 
-        public string Name { get;  }
+        public string Name { get; }
+
+        public int[] Steps { get; set; }
     }
 }

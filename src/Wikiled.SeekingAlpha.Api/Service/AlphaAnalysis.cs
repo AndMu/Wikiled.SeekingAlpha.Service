@@ -21,7 +21,9 @@ namespace Wikiled.SeekingAlpha.Api.Service
         public async Task<TrackingResults> GetTrackingResults(SentimentRequest request, CancellationToken token)
         {
             CheckArguments(request);
-            var result = await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{request.Type}/{request.Name}", token).ConfigureAwait(false);
+            var result = request.Steps?.Length > 0
+                             ? await client.PostRequest<SentimentRequest, RawResponse<TrackingResults>>("api/monitor/sentimentex", request, token).ConfigureAwait(false)
+                             : await client.GetRequest<RawResponse<TrackingResults>>($"api/monitor/sentiment/{request.Type}/{request.Name}", token).ConfigureAwait(false);
             if (!result.IsSuccess)
             {
                 throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
