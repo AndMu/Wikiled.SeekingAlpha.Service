@@ -12,5 +12,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic
         [FromRoute]
         [Required]
         public string Name { get; set; }
+
+        public int[] Steps { get; set; }
     }
 }
