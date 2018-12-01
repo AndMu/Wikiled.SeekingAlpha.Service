@@ -33,6 +33,7 @@ namespace Wikiled.News.Monitoring.Feeds
                         tasks.Add((feed, task));
                     }
 
+                    DateTime cutOff = DateTime.Today.AddDays(-10);
                     foreach (var task in tasks)
                     {
                         var result = await task.Task;
@@ -45,6 +46,12 @@ namespace Wikiled.News.Monitoring.Feeds
                             article.Title = item.Title;
                             article.Feed = task.Feed;
                             article.Element = item.SpecificItem.Element;
+                            if (article.Date < cutOff)
+                            {
+                                logger.LogDebug("Ignoring old definition {0} [{1}]...", article.Title, article.Date);
+                                continue;
+                            }
+
                             logger.LogDebug("Found definition {0} [{1}]...", article.Title, article.Date);
                             observer.OnNext(article);
                         }
