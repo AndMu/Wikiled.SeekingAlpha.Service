@@ -41,6 +41,16 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
             Assert.AreEqual(0, result.Total);
         }
 
+
+        [Test]
+        public async Task GetTrackingResultsPost()
+        {
+            var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article) {Steps = new[] {100}}, CancellationToken.None).ConfigureAwait(false);
+            Assert.AreEqual("AMD", result.Keyword);
+            Assert.AreEqual(0, result.Sentiment["100H"].TotalMessages);
+        }
+
         [Test]
         public async Task GetTrackingHistory()
         {
