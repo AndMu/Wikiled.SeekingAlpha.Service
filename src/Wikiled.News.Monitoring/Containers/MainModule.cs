@@ -13,15 +13,8 @@ namespace Wikiled.News.Monitoring.Containers
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<LoggerFactory>().As<ILoggerFactory>()
-                   .SingleInstance();
-            builder.RegisterGeneric(typeof(Logger<>))
-                   .As(typeof(ILogger<>))
-                   .SingleInstance();
             builder.RegisterType<TrackedRetrieval>().As<ITrackedRetrieval>();
             builder.RegisterType<ArticleDataReader>().As<IArticleDataReader>();
-
-            builder.RegisterInstance(TaskPoolScheduler.Default).As<IScheduler>();
             builder.RegisterType<ArticlesMonitor>().As<IArticlesMonitor>();
             builder.RegisterType<FeedsHandler>().As<IFeedsHandler>();
 
