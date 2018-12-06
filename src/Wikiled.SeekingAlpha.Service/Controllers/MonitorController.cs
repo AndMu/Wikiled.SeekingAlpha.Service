@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,19 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             this.tracking = tracking ?? throw new ArgumentNullException(nameof(tracking));
         }
 
+        [Route("sentimentall")]
+        [HttpPost]
+        public IActionResult GetResultAll([FromBody] SentimentRequest[] requests)
+        {
+            Dictionary<string, TrackingResults> results = new Dictionary<string, TrackingResults>();
+            foreach (var sentimentRequest in requests)
+            {
+                results[sentimentRequest.Name] = GetSingle(sentimentRequest);
+            }
+
+            return Ok(results.ToArray());
+        }
+
         [Route("sentiment/{type}/{name}")]
         [HttpGet]
         public IActionResult GetResult(SentimentRequest request)
@@ -31,21 +45,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
                 return NoContent();
             }
 
-            var tracker = tracking.Resolve(request.Name, request.Type.ToString());
-            TrackingResults result = new TrackingResults
-            {
-                Keyword = tracker.Name,
-                Type =  tracker.Type
-            };
-
-            int[] steps = { 24, 12, 6, 1 };
-            foreach (int step in steps)
-            {
-                result.Sentiment[$"{step}H"] = new TrackingResult { Average = tracker.CalculateAverageRating(step), TotalMessages = tracker.Count(lastHours: step) };
-            }
-
-            result.Total = tracker.Count(false);
-            return Ok(result);
+            return Ok(GetSingle(request));
         }
 
         [Route("history/{hours}/{type}/{name}")]
@@ -58,8 +58,45 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
                 return NoContent();
             }
 
+            return Ok(GetSingleHistory(request, hours));
+        }
+
+        [Route("historyall/{hours}")]
+        [HttpGet]
+        public IActionResult GetResultHistoryAll(SentimentRequest[] request, int hours)
+        {
+            Dictionary<string, RatingRecord[]> results = new Dictionary<string, RatingRecord[]>();
+            foreach (var sentimentRequest in request)
+            {
+                results[sentimentRequest.Name] = GetSingleHistory(sentimentRequest, hours);
+            }
+
+            return Ok(results);
+        }
+
+        private RatingRecord[] GetSingleHistory(SentimentRequest request, int hours)
+        {
             var tracker = tracking.Resolve(request.Name, request.Type.ToString());
-            return Ok(tracker.GetRatings(hours).OrderByDescending(item => item.Date));
+            return tracker.GetRatings(hours).OrderByDescending(item => item.Date).ToArray();
+        }
+
+        private TrackingResults GetSingle(SentimentRequest request)
+        {
+            var tracker = tracking.Resolve(request.Name, request.Type.ToString());
+            TrackingResults result = new TrackingResults { Keyword = tracker.Name, Type = tracker.Type };
+
+            int[] steps = { 24, 12, 6, 1 };
+            foreach (int step in steps)
+            {
+                result.Sentiment[$"{step}H"] = new TrackingResult
+                {
+                    Average = tracker.CalculateAverageRating(step),
+                    TotalMessages = tracker.Count(lastHours: step)
+                };
+            }
+
+            result.Total = tracker.Count(false);
+            return result;
         }
     }
 }
