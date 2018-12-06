@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿using NUnit.Framework;
+using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Wikiled.Common.Net.Client;
 using Wikiled.SeekingAlpha.Api.Request;
 using Wikiled.SeekingAlpha.Api.Service;
@@ -28,15 +28,15 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         [Test]
         public async Task Version()
         {
-            var response = await wrapper.ApiClient.GetRequest<RawResponse<string>>("api/monitor/version", CancellationToken.None).ConfigureAwait(false);
+            ServiceResponse<RawResponse<string>> response = await wrapper.ApiClient.GetRequest<RawResponse<string>>("api/monitor/version", CancellationToken.None).ConfigureAwait(false);
             Assert.IsTrue(response.IsSuccess);
         }
 
         [Test]
         public async Task GetTrackingResults()
         {
-            var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
-            var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article), CancellationToken.None).ConfigureAwait(false);
+            AlphaAnalysis analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            Sentiment.Tracking.Logic.TrackingResults result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article), CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual("AMD", result.Keyword);
             Assert.AreEqual(0, result.Total);
         }
@@ -45,18 +45,50 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         [Test]
         public async Task GetTrackingResultsPost()
         {
-            var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
-            var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article) {Steps = new[] {100}}, CancellationToken.None).ConfigureAwait(false);
+            AlphaAnalysis analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            Sentiment.Tracking.Logic.TrackingResults result = await analysis.GetTrackingResults(new SentimentRequest("AMD", SentimentType.Article) { Steps = new[] { 100 } }, CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual("AMD", result.Keyword);
             Assert.AreEqual(0, result.Sentiment["100H"].TotalMessages);
         }
 
         [Test]
+        public async Task GetTrackingResultsAll()
+        {
+            AlphaAnalysis analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            System.Collections.Generic.Dictionary<string, Sentiment.Tracking.Logic.TrackingResults> result = await analysis.GetTrackingResults(
+                    new[]
+                    {
+                        new SentimentRequest("AMD", SentimentType.Article),
+                        new SentimentRequest("TSLA", SentimentType.Article)
+                    },
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual("AMD", result["AMD"].Keyword);
+        }
+
+        [Test]
         public async Task GetTrackingHistory()
         {
-            var analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
-            var result = await analysis.GetTrackingHistory(new SentimentRequest("AMD", SentimentType.Article), 10, CancellationToken.None).ConfigureAwait(false);
+            AlphaAnalysis analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            Sentiment.Tracking.Logic.RatingRecord[] result = await analysis.GetTrackingHistory(new SentimentRequest("AMD", SentimentType.Article), 10, CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual(0, result.Length);
+        }
+        [Test]
+        public async Task GetTrackingHistoryAll()
+        {
+            AlphaAnalysis analysis = new AlphaAnalysis(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
+            System.Collections.Generic.Dictionary<string, Sentiment.Tracking.Logic.RatingRecord[]> result = await analysis.GetTrackingHistory(
+                new[]
+                    {
+                    new SentimentRequest("AMD", SentimentType.Article),
+                        new SentimentRequest("TSLA", SentimentType.Article),
+                        },
+                    10,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            Assert.AreEqual(2, result.Count);
         }
     }
 }

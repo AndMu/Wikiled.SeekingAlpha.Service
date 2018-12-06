@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Net.Client;
@@ -36,6 +37,38 @@ namespace Wikiled.SeekingAlpha.Api.Service
         {
             CheckArguments(request);
             var result = await client.GetRequest<RawResponse<RatingRecord[]>>($"api/monitor/history/{hours}/{request.Type}/{request.Name}", token).ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
+            }
+
+            return result.Result.Value;
+        }
+
+        public async Task<Dictionary<string, TrackingResults>> GetTrackingResults(SentimentRequest[] request, CancellationToken token)
+        {
+            var result = await client
+                .PostRequest<SentimentRequest[], RawResponse<Dictionary<string, TrackingResults>>>(
+                    "api/monitor/sentimentall",
+                    request,
+                    token)
+                .ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);
+            }
+
+            return result.Result.Value;
+        }
+
+        public async Task<Dictionary<string, RatingRecord[]>> GetTrackingHistory(SentimentRequest[] request, int hours, CancellationToken token)
+        {
+            var result = await client
+                .PostRequest<SentimentRequest[], RawResponse<Dictionary<string, RatingRecord[]>>>(
+                    $"api/monitor/historyall/{hours}",
+                    request,
+                    token)
+                .ConfigureAwait(false);
             if (!result.IsSuccess)
             {
                 throw new ApplicationException("Failed to retrieve:" + result.HttpResponseMessage);

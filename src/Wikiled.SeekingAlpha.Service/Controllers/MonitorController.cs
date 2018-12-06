@@ -39,7 +39,7 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
                 results[sentimentRequest.Name] = GetSingle(sentimentRequest);
             }
 
-            return Ok(results.ToArray());
+            return Ok(results);
         }
 
         [Route("sentiment/{type}/{name}")]
@@ -69,8 +69,8 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
         }
 
         [Route("historyall/{hours}")]
-        [HttpGet]
-        public IActionResult GetResultHistoryAll(SentimentRequest[] request, int hours)
+        [HttpPost]
+        public IActionResult GetResultHistoryAll([FromBody] SentimentRequest[] request, int hours)
         {
             Dictionary<string, RatingRecord[]> results = new Dictionary<string, RatingRecord[]>();
             foreach (var sentimentRequest in request)
@@ -93,6 +93,11 @@ namespace Wikiled.SeekingAlpha.Service.Controllers
             TrackingResults result = new TrackingResults { Keyword = tracker.Name, Type = tracker.Type };
 
             int[] steps = { 24, 12, 6, 1 };
+            if (request.Steps != null)
+            {
+                steps = request.Steps;
+            }
+
             foreach (int step in steps)
             {
                 result.Sentiment[$"{step}H"] = new TrackingResult
