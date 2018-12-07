@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Service", "Wikiled.SeekingAlpha.Service\Wikiled.SeekingAlpha.Service.csproj", "{5100A079-D770-4F1D-8C56-0529C8989D73}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Api", "Wikiled.SeekingAlpha.Api\Wikiled.SeekingAlpha.Api.csproj", "{1F594A58-46C2-471A-BAAC-29AE7FECF67D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Service.Tests", "Wikiled.SeekingAlpha.Service.Tests\Wikiled.SeekingAlpha.Service.Tests.csproj", "{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring", "Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj", "{7926E32F-2EC0-41C1-9867-B695B9B7B72B}"
@@ -20,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.Tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{447123EB-BA32-4ED7-867A-0A72133FEEFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wikiled.News.Monitoring.TestApp", "Wikiled.News.Monitoring.TestApp\Wikiled.News.Monitoring.TestApp.csproj", "{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.TestApp", "Wikiled.News.Monitoring.TestApp\Wikiled.News.Monitoring.TestApp.csproj", "{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +30,6 @@ Global
 		{5100A079-D770-4F1D-8C56-0529C8989D73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5100A079-D770-4F1D-8C56-0529C8989D73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5100A079-D770-4F1D-8C56-0529C8989D73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F594A58-46C2-471A-BAAC-29AE7FECF67D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F594A58-46C2-471A-BAAC-29AE7FECF67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F594A58-46C2-471A-BAAC-29AE7FECF67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F594A58-46C2-471A-BAAC-29AE7FECF67D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,7 +1,8 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Wikiled.Common.Extensions;
 using Wikiled.News.Monitoring.Data;
 
@@ -21,19 +22,28 @@ namespace Wikiled.News.Monitoring.Persistency
             this.path = path;
         }
 
-        public Task Save(Article article)
+        public Task<bool> Save(Article article)
         {
-            logger.LogInformation("Saving: {0}", article.Definition.Title);
-            string output = JsonConvert.SerializeObject(article, Formatting.Indented);
-            var currentPath = Path.Combine(path, article.Definition.Feed.Category);
-            var file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
-            lock (syncRoot)
+            try
             {
-                currentPath.EnsureDirectoryExistence();
-                File.WriteAllText(file, output);
+                logger.LogInformation("Saving: {0}", article.Definition.Title);
+                string output = JsonConvert.SerializeObject(article, Formatting.Indented);
+                string currentPath = Path.Combine(path, article.Definition.Feed.Category);
+                string file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
+                lock (syncRoot)
+                {
+                    currentPath.EnsureDirectoryExistence();
+                    File.WriteAllText(file, output);
+                }
+
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed");
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task Save(Article article)
+        public async Task<bool> Save(Article article)
         {
             try
             {
@@ -82,13 +82,14 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                     trackerArticle.Count(),
                     trackerArticle.CalculateAverageRating());
                 await saveTask.ConfigureAwait(false);
+                return true;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed processing");
             }
-        }
 
-      
+            return false;
+        }
     }
 }

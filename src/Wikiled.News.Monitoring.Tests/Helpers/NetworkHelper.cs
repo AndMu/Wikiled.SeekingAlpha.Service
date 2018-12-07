@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using Autofac;
+using Microsoft.Extensions.Logging;
+using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Retriever;
@@ -37,6 +39,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                 }));
 
             builder.RegisterModule(new AlphaModule("Data", "AMD"));
+            builder.RegisterModule(new LoggingModule(new LoggerFactory()));
             Container = builder.Build();
             Retrieval = Container.Resolve<ITrackedRetrieval>();
         }

@@ -1,6 +1,4 @@
-﻿using System.Reactive.Concurrency;
-using Autofac;
-using Microsoft.Extensions.Logging;
+﻿using Autofac;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Monitoring;
 using Wikiled.News.Monitoring.Persistency;
@@ -15,11 +13,9 @@ namespace Wikiled.News.Monitoring.Containers
         {
             builder.RegisterType<TrackedRetrieval>().As<ITrackedRetrieval>();
             builder.RegisterType<ArticleDataReader>().As<IArticleDataReader>();
-            builder.RegisterType<ArticlesMonitor>().As<IArticlesMonitor>();
+            builder.RegisterType<ArticlesMonitor>().As<IArticlesMonitor>().SingleInstance();
             builder.RegisterType<FeedsHandler>().As<IFeedsHandler>();
-
             builder.RegisterType<ArticlesPersistency>().As<IArticlesPersistency>();
-            
         }
     }
 }

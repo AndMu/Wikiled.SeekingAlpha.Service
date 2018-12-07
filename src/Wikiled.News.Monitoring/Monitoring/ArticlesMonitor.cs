@@ -54,6 +54,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         public IObservable<Article> Monitor()
         {
+            logger.LogDebug("Monitor");
             return Observable.Interval(TimeSpan.FromHours(4), scheduler)
                              .Select(item => Updated().ToObservable(scheduler))
                              .Merge()

@@ -1,159 +1,87 @@
-﻿using Autofac;
-using Autofac.Extensions.DependencyInjection;
+﻿using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Reactive.Disposables;
-using System.Reflection;
 using Wikiled.Common.Extensions;
-using Wikiled.Common.Net.Client;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Monitoring;
-using Wikiled.News.Monitoring.Persistency;
 using Wikiled.SeekingAlpha.Service.Config;
 using Wikiled.SeekingAlpha.Service.Logic.Tracking;
-using Wikiled.Sentiment.Api.Request;
-using Wikiled.Sentiment.Api.Service;
-using Wikiled.Sentiment.Tracking.Logic;
-using Wikiled.Sentiment.Tracking.Modules;
-using Wikiled.Server.Core.Errors;
+using Wikiled.Sentiment.Tracking.Service;
 using Wikiled.Server.Core.Helpers;
-using Wikiled.Server.Core.Middleware;
 
 namespace Wikiled.SeekingAlpha.Service
 {
-    public class Startup
+    public class Startup : BaseStartup
     {
-        private readonly ILogger<Startup> logger;
-
         private readonly CompositeDisposable disposable = new CompositeDisposable();
 
+        private readonly ILogger<Startup> logger;
+
+        private MonitorConfig config;
+
         public Startup(ILoggerFactory loggerFactory, IHostingEnvironment env)
+            : base(loggerFactory, env)
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-            Env = env;
             logger = loggerFactory.CreateLogger<Startup>();
-            Configuration.ChangeNlog();
-            logger.LogInformation($"Starting: {Assembly.GetExecutingAssembly().GetName().Version}");
         }
 
-        public IConfigurationRoot Configuration { get; }
-
-        public IHostingEnvironment Env { get; }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public override void Configure(IApplicationBuilder app,
+                                       IHostingEnvironment env,
+                                       IApplicationLifetime applicationLifetime)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                //app.UseHsts();
-            }
-
-            //app.UseHttpsRedirection();
-            app.UseCors("CorsPolicy");
-            app.UseExceptionHandlingMiddleware();
-            app.UseHttpStatusCodeExceptionMiddleware();
-            app.UseRequestLogging();
-            app.UseMvc();
+            base.Configure(app, env, applicationLifetime);
             applicationLifetime.ApplicationStopping.Register(OnShutdown, disposable);
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+
+        public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            // Needed to add this section, and....
-            services.AddCors(
-                options =>
-                {
-                    options.AddPolicy(
-                        "CorsPolicy",
-                        itemBuider => itemBuider.AllowAnyOrigin()
-                                                .AllowAnyMethod()
-                                                .AllowAnyHeader()
-                                                .AllowCredentials());
-                });
-
-            // Add framework services.
-            services.AddMvc(options => { });
-
-            // needed to load configuration from appsettings.json
-            services.AddOptions();
-
-            MonitorConfig config = services.RegisterConfiguration<MonitorConfig>(Configuration.GetSection("Monitor"));
-            SentimentConfig sentimentConfig = services.RegisterConfiguration<SentimentConfig>(Configuration.GetSection("sentiment"));
-
-            // Create the container builder.
-            ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterModule<MainModule>();
-            builder.RegisterModule(new AlphaModule(config.Location, config.Stocks));
-            builder.RegisterModule(new RetrieverModule(config.Service)); ;
-            builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
-
-            builder.Populate(services);
-            SetupServices(builder, sentimentConfig);
-            SetupTracking(builder, config.Location);
-
-            IContainer appContainer = builder.Build();
-            IArticlesMonitor monitor = appContainer.Resolve<IArticlesMonitor>();
+            config = services.RegisterConfiguration<MonitorConfig>(Configuration.GetSection("Monitor"));
             config.Location.EnsureDirectoryExistence();
-            IArticlesPersistency persistency = appContainer.Resolve<TrackingInstance>();
-            IDisposable start = monitor.Start().Subscribe(item => persistency.Save(item));
-            IDisposable stop = monitor.Monitor().Subscribe(item => persistency.Save(item));
-            disposable.Add(start);
-            disposable.Add(stop);
-            
-
-            logger.LogInformation("Ready!");
-            // Create the IServiceProvider based on the container.
-            return new AutofacServiceProvider(appContainer);
-        }
-
-        private void SetupTracking(ContainerBuilder builder, string persistency)
-        {
-            var config = new TrackingConfiguration(TimeSpan.FromHours(1), TimeSpan.FromDays(10), Path.Combine(persistency, "ratings.csv"));
-            config.Restore = true;
-            builder.RegisterModule(new TrackingModule(config));
-            builder.RegisterType<TrackingInstance>().SingleInstance();
-        }
-
-        private void SetupServices(ContainerBuilder builder, SentimentConfig sentiment)
-        {
-            logger.LogInformation("Setting up services...");
-            builder.Register(context => new StreamApiClientFactory(context.Resolve<ILoggerFactory>(),
-                                                                   new HttpClient
-                                                                   {
-                                                                       Timeout = TimeSpan.FromMinutes(10)
-                                                                   },
-                                                                   new Uri(sentiment.Url)))
-                .As<IStreamApiClientFactory>();
-            WorkRequest request = new WorkRequest
-            {
-                CleanText = true,
-                Domain = sentiment.Domain
-            };
-            builder.RegisterInstance(request);
-            builder.RegisterType<SentimentAnalysis>().As<ISentimentAnalysis>();
-            logger.LogInformation("Register sentiment: {0} {1}", sentiment.Url, sentiment.Domain);
+            return base.ConfigureServices(services);
         }
 
         private void OnShutdown(object toDispose)
         {
             ((IDisposable)toDispose).Dispose();
+        }
+
+        protected override void ConfigureSpecific(ContainerBuilder builder)
+        {
+            builder.RegisterType<TrackingInstance>()
+                .SingleInstance()
+                .AutoActivate()
+                .OnActivating(item =>
+                {
+                    logger.LogInformation("Starting monitoring");
+                    var initial = item.Context.Resolve<IArticlesMonitor>()
+                        .Start()
+                        .Select(item.Instance.Save)
+                        .Merge()
+                        .Subscribe();
+                    disposable.Add(initial);
+
+                    var monitorArticles = item.Context.Resolve<IArticlesMonitor>()
+                        .Monitor()
+                        .Select(item.Instance.Save)
+                        .Merge()
+                        .Subscribe();
+                    disposable.Add(monitorArticles);
+                });
+            builder.RegisterModule<MainModule>();
+            builder.RegisterModule(new AlphaModule(config.Location, config.Stocks));
+            builder.RegisterModule(new RetrieverModule(config.Service));
+        }
+
+        protected override string GetPersistencyLocation()
+        {
+            return config.Location;
         }
     }
 }

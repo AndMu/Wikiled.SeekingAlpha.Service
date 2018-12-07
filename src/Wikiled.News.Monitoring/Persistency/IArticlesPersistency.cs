@@ -5,6 +5,6 @@ namespace Wikiled.News.Monitoring.Persistency
 {
     public interface IArticlesPersistency
     {
-        Task Save(Article article);
+        Task<bool> Save(Article article);
     }
 }
