@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Net.Client;
@@ -20,7 +19,7 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         public void SetUp()
         {
             wrapper = ServerWrapper.Create<Startup>(TestContext.CurrentContext.TestDirectory, services => { });
-            analysis = new SentimentTracking(new ApiClientFactory(wrapper.Client, new Uri(wrapper.Client.BaseAddress, "api/monitor/")));
+            analysis = new SentimentTracking(new ApiClientFactory(wrapper.Client, wrapper.Client.BaseAddress));
         }
 
         [OneTimeTearDown]
@@ -39,11 +38,9 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         [Test]
         public async Task GetTrackingResults()
         {
-            
             var result = await analysis.GetTrackingResults(new SentimentRequest("AMD", "TSLA"), CancellationToken.None).ConfigureAwait(false);
             Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("AMD", result["AMD"].Keyword);
-            Assert.AreEqual(0, result["AMD"].Total);
+            Assert.AreEqual(0, result["AMD"][0].TotalMessages);
         }
 
         [Test]
