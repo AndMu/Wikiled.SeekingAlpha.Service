@@ -2,8 +2,11 @@
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 using System.Threading.Tasks;
 using Wikiled.Common.Extensions;
+using Wikiled.Common.Helpers;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Persistency
@@ -18,7 +21,7 @@ namespace Wikiled.News.Monitoring.Persistency
 
         public ArticlesPersistency(ILogger<ArticlesPersistency> logger, string path)
         {
-            this.logger = logger;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.path = path;
         }
 
@@ -29,11 +32,15 @@ namespace Wikiled.News.Monitoring.Persistency
                 logger.LogInformation("Saving: {0}", article.Definition.Title);
                 string output = JsonConvert.SerializeObject(article, Formatting.Indented);
                 string currentPath = Path.Combine(path, article.Definition.Feed.Category);
-                string file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.DateTime:yyyy-MM-dd}.json");
+                string file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}.zip");
+                var data = output.ZipAsTextFile($"{article.Definition.Title.CreateLetterText()}.json");
                 lock (syncRoot)
                 {
-                    currentPath.EnsureDirectoryExistence();
-                    File.WriteAllText(file, output);
+                    if (!File.Exists(file))
+                    {
+                        currentPath.EnsureDirectoryExistence();
+                        File.WriteAllBytes(file, data);
+                    }
                 }
 
                 return Task.FromResult(true);
@@ -45,5 +52,7 @@ namespace Wikiled.News.Monitoring.Persistency
 
             return Task.FromResult(false);
         }
+
+      
     }
 }

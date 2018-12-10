@@ -6,6 +6,7 @@ using System;
 using System.Net;
 using System.Reflection;
 using Wikiled.Common.Extensions;
+using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Monitoring;
@@ -23,6 +24,8 @@ namespace Wikiled.News.Monitoring.TestApp
             log.Info("Starting {0} version utility...", Assembly.GetExecutingAssembly().GetName().Version);
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
+            builder.RegisterModule<LoggingModule>();
+            builder.RegisterModule<CommonModule>();
             builder.RegisterModule(new AlphaModule("Articles", "AAPL", "AMD", "GOOG", "AAPL"));
             builder.RegisterModule(
                 new RetrieverModule(new RetrieveConfguration
@@ -41,7 +44,6 @@ namespace Wikiled.News.Monitoring.TestApp
                     },
                     MaxConcurrent = 1
                 }));
-
 
             IContainer container = builder.Build();
             ILoggerFactory loggerFactory = container.Resolve<ILoggerFactory>();
