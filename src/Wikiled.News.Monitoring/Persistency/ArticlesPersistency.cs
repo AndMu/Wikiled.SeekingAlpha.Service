@@ -32,7 +32,7 @@ namespace Wikiled.News.Monitoring.Persistency
                 logger.LogInformation("Saving: {0}", article.Definition.Title);
                 string output = JsonConvert.SerializeObject(article, Formatting.Indented);
                 string currentPath = Path.Combine(path, article.Definition.Feed.Category);
-                string file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}.zip");
+                string file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.Definition.Id}.zip");
                 var data = output.ZipAsTextFile($"{article.Definition.Title.CreateLetterText()}.json");
                 lock (syncRoot)
                 {
