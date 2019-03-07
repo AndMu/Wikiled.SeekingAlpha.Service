@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Readers;
 
-namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Readers
 {
     public class AlphaDefinitionTransformer : IDefinitionTransformer
     {

@@ -1,15 +1,17 @@
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
 {
     [TestFixture]
-    public class AlphaArticleTextReader : BaseAlphaTests
+    public class AlphaArticleTextReaderTests : BaseAlphaTests
     {
         [Test]
         public async Task ReadArticle()
         {
-            var article = await Session.ReadArticle(Article).ConfigureAwait(false);
+            var tokenSource = new CancellationTokenSource(1000);
+            var article = await Session.ReadArticle(Article, tokenSource.Token).ConfigureAwait(false);
             Assert.AreEqual("Apple: Price Matters", article.Title);
             Assert.AreEqual(6673, article.Text.Length);
         }

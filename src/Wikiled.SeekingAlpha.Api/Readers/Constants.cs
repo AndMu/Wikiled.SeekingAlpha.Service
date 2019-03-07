@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Readers
 {
     public static class Constants
     {

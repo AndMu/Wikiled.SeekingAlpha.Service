@@ -12,13 +12,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Servic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Service.Tests", "Wikiled.SeekingAlpha.Service.Tests\Wikiled.SeekingAlpha.Service.Tests.csproj", "{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring", "Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj", "{7926E32F-2EC0-41C1-9867-B695B9B7B72B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.Tests", "Wikiled.News.Monitoring.Tests\Wikiled.News.Monitoring.Tests.csproj", "{163D1B00-41FE-47E0-A69D-4B39A285225E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{447123EB-BA32-4ED7-867A-0A72133FEEFB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.TestApp", "Wikiled.News.Monitoring.TestApp\Wikiled.News.Monitoring.TestApp.csproj", "{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Api", "Wikiled.SeekingAlpha.Api\Wikiled.SeekingAlpha.Api.csproj", "{4CFD42E2-1CB7-48CF-BE74-3F14C3ED94CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.Api.Tests", "Wikiled.SeekingAlpha.Api.Tests\Wikiled.SeekingAlpha.Api.Tests.csproj", "{9994772A-B433-468E-87D5-99EF69009374}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.SeekingAlpha.TestApp", "Wikiled.SeekingAlpha.TestApp\Wikiled.SeekingAlpha.TestApp.csproj", "{F8E1BD32-E7BC-436B-8498-99FE4F822752}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,25 +34,25 @@ Global
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7926E32F-2EC0-41C1-9867-B695B9B7B72B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7926E32F-2EC0-41C1-9867-B695B9B7B72B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7926E32F-2EC0-41C1-9867-B695B9B7B72B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7926E32F-2EC0-41C1-9867-B695B9B7B72B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CFD42E2-1CB7-48CF-BE74-3F14C3ED94CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CFD42E2-1CB7-48CF-BE74-3F14C3ED94CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CFD42E2-1CB7-48CF-BE74-3F14C3ED94CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CFD42E2-1CB7-48CF-BE74-3F14C3ED94CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9994772A-B433-468E-87D5-99EF69009374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9994772A-B433-468E-87D5-99EF69009374}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9994772A-B433-468E-87D5-99EF69009374}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9994772A-B433-468E-87D5-99EF69009374}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8E1BD32-E7BC-436B-8498-99FE4F822752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8E1BD32-E7BC-436B-8498-99FE4F822752}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8E1BD32-E7BC-436B-8498-99FE4F822752}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8E1BD32-E7BC-436B-8498-99FE4F822752}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6EB84A9A-39D1-4D08-B094-350ECED6D6FD} = {447123EB-BA32-4ED7-867A-0A72133FEEFB}
-		{163D1B00-41FE-47E0-A69D-4B39A285225E} = {447123EB-BA32-4ED7-867A-0A72133FEEFB}
+		{9994772A-B433-468E-87D5-99EF69009374} = {447123EB-BA32-4ED7-867A-0A72133FEEFB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {635F2295-F5D6-4362-8D98-D884522DFE57}

@@ -4,7 +4,7 @@ namespace Wikiled.SeekingAlpha.Service.Config
 {
     public class MonitorConfig
     {
-        public RetrieveConfguration Service { get; set; }
+        public RetrieveConfiguration Service { get; set; }
 
         public string[] Stocks { get; set; }
 

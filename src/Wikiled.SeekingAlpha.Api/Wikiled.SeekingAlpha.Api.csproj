@@ -5,16 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="System.Reactive" Version="4.1.2" />
-    <PackageReference Include="CodeHollow.FeedReader" Version="1.1.5" />
+    <PackageReference Include="Autofac" Version="4.9.1" />
+    <PackageReference Include="System.Reactive" Version="4.1.3" />
+    <PackageReference Include="CodeHollow.FeedReader" Version="1.1.6" />
     <PackageReference Include="Fizzler.Systems.HtmlAgilityPack" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="Polly" Version="6.1.2" />
-    <PackageReference Include="Wikiled.Common" Version="1.1.6" />
-    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.11" />
+    <PackageReference Include="Polly" Version="7.0.3" />
+    <PackageReference Include="Wikiled.Common" Version="1.1.7" />
+    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.15" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
+    <PackageReference Include="Wikiled.News.Monitoring" Version="1.0.4" />
   </ItemGroup>
 
 </Project>

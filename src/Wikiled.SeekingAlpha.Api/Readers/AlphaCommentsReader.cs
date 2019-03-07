@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
-namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Readers
 {
     public class AlphaCommentsReader : ICommentsReader
     {
@@ -38,10 +40,10 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
                     try
                     {
                         var uri = new Uri($"https://seekingalpha.com/account/ajax_get_comments?id={article.Id}&type=Article&commentType=");
-                        var data = await reader.Read(uri, Constants.Ajax).ConfigureAwait(false);
+                        var data = await reader.Read(uri, CancellationToken.None, Constants.Ajax).ConfigureAwait(false);
                         var comments = JsonConvert.DeserializeObject<AlphaComments>(data);
-                        int total = 0;
-                        foreach (CommentData commentData in Read(comments.Comments))
+                        var total = 0;
+                        foreach (var commentData in Read(comments.Comments))
                         {
                             total++;
                             var document = new HtmlDocument();
@@ -73,7 +75,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 
             foreach (var comment in data)
             {
-                CommentData result = new CommentData();
+                var result = new CommentData();
                 result.Author = comment.Value.UserNick;
                 result.AuthorId = comment.Value?.UserId.ToString();
                 result.IsSpecialAuthor = comment.Value.IsPremiumAuthor;

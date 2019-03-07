@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Readers
 {
     public class AlphaComments
     {

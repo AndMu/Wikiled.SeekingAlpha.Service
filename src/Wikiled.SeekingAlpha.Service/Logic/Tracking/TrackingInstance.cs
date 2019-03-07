@@ -38,7 +38,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                 var saveTask = Task.Run(() => persistency.Save(article));   
                 var trackerArticle = trackingManager.Resolve(article.Definition.Feed.Category, "Article");
                 var trackerComments = trackingManager.Resolve(article.Definition.Feed.Category, "Comment");
-                Dictionary<string, (string Text, Action<double?> Rating)> texts = new Dictionary<string, (string Text, Action<double?> Rating)>();
+                var texts = new Dictionary<string, (string Text, Action<double?> Rating)>();
                 if (!trackerArticle.IsTracked(article.Definition.Id))
                 {
                     logger.LogDebug("Tracking: {0}", article.Definition.Id);

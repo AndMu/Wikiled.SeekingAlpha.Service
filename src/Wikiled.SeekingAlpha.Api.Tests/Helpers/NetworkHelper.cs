@@ -3,16 +3,16 @@ using Autofac;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
-using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Retriever;
+using Wikiled.SeekingAlpha.Api.Containers;
 
-namespace Wikiled.News.Monitoring.Tests.Helpers
+namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
 {
     public class NetworkHelper
     {
         public NetworkHelper(AlphaModule module = null)
         {
-            ContainerBuilder builder = new ContainerBuilder();
+            var builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
             if (module != null)
             {
@@ -21,7 +21,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
 
             builder.RegisterModule(
                 new RetrieverModule(
-                    new RetrieveConfguration
+                    new RetrieveConfiguration
                 {
                     LongRetryDelay = 1000,
                     CallDelay = 1000,

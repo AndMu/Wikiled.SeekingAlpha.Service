@@ -1,14 +1,14 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using NUnit.Framework;
-using Wikiled.News.Monitoring.Containers;
-using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
-using Wikiled.News.Monitoring.Tests.Helpers;
+using Wikiled.SeekingAlpha.Api.Containers;
+using Wikiled.SeekingAlpha.Api.Tests.Helpers;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
 {
     [TestFixture]
     public class ArticleDataReaderTests
@@ -37,7 +37,8 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
             var article = new ArticleDefinition();
             article.Id = "4210510";
             article.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
-            var result = await instance.Read(article);
+            var tokenSource = new CancellationTokenSource(1000);
+            var result = await instance.Read(article, tokenSource.Token).ConfigureAwait(false);
             Assert.AreEqual(6673, result.ArticleText.Text.Length);
             Assert.Greater(result.Comments.Length, 10);
         }

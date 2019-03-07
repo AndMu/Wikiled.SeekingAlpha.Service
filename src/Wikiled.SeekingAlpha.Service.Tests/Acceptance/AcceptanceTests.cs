@@ -31,7 +31,7 @@ namespace Wikiled.SeekingAlpha.Service.Tests.Acceptance
         [Test]
         public async Task Version()
         {
-            ServiceResponse<RawResponse<string>> response = await wrapper.ApiClient.GetRequest<RawResponse<string>>("api/monitor/version", CancellationToken.None).ConfigureAwait(false);
+            var response = await wrapper.ApiClient.GetRequest<RawResponse<string>>("api/monitor/version", CancellationToken.None).ConfigureAwait(false);
             Assert.IsTrue(response.IsSuccess);
         }
 

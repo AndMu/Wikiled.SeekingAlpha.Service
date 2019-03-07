@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Threading;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Persistency;
 using Wikiled.News.Monitoring.Readers;
-using Wikiled.News.Monitoring.Readers.SeekingAlpha;
+using Wikiled.SeekingAlpha.Api.Readers;
 
-namespace Wikiled.News.Monitoring.Containers.Alpha
+namespace Wikiled.SeekingAlpha.Api.Containers
 {
     public class AlphaModule : Module
     {
@@ -34,7 +35,7 @@ namespace Wikiled.News.Monitoring.Containers.Alpha
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<ApplicationConfiguration>().As<IApplicationConfiguration>();
-            builder.RegisterType<AlphaSessionReader>().As<ISessionReader>().SingleInstance().OnActivating(async item => await item.Instance.Init());
+            builder.RegisterType<AlphaSessionReader>().As<ISessionReader>().SingleInstance().OnActivating(async item => await item.Instance.Init(CancellationToken.None).ConfigureAwait(false));
             builder.RegisterType<AlphaCommentsReader>().As<ICommentsReader>();
             builder.RegisterType<AlphaArticleTextReader>().As<IArticleTextReader>();
             builder.RegisterType<AlphaDefinitionTransformer>().As<IDefinitionTransformer>();
@@ -42,7 +43,7 @@ namespace Wikiled.News.Monitoring.Containers.Alpha
 
             foreach (var stock in stocks)
             {
-                FeedName feed = new FeedName();
+                var feed = new FeedName();
                 feed.Url = $"https://seekingalpha.com/api/sa/combined/{stock}.xml";
                 feed.Category = stock;
                 builder.RegisterInstance(feed);

@@ -3,9 +3,9 @@ using Autofac;
 using NUnit.Framework;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
-using Wikiled.News.Monitoring.Tests.Helpers;
+using Wikiled.SeekingAlpha.Api.Tests.Helpers;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
 {
     [TestFixture]
     public abstract class BaseAlphaTests

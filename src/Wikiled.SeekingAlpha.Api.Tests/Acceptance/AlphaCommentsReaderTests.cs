@@ -1,7 +1,8 @@
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
 {
     [TestFixture]
     public class AlphaCommentsReaderTests : BaseAlphaTests
@@ -9,7 +10,8 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance.SeekingAlpha
         [Test]
         public async Task ReadComments()
         {
-            var comments = await Session.ReadComments(Article);
+            var tokenSource = new CancellationTokenSource(1000);
+            var comments = await Session.ReadComments(Article, tokenSource.Token).ConfigureAwait(false);
             Assert.Greater(comments.Length, 100);
         }
     }

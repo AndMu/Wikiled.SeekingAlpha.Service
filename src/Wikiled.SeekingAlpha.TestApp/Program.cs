@@ -1,19 +1,19 @@
-﻿using Autofac;
+﻿using System;
+using System.Net;
+using System.Reflection;
+using Autofac;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
-using System;
-using System.Net;
-using System.Reflection;
 using Wikiled.Common.Extensions;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
-using Wikiled.News.Monitoring.Containers.Alpha;
 using Wikiled.News.Monitoring.Monitoring;
 using Wikiled.News.Monitoring.Persistency;
 using Wikiled.News.Monitoring.Retriever;
+using Wikiled.SeekingAlpha.Api.Containers;
 
-namespace Wikiled.News.Monitoring.TestApp
+namespace Wikiled.SeekingAlpha.TestApp
 {
     public class Program
     {
@@ -22,13 +22,13 @@ namespace Wikiled.News.Monitoring.TestApp
         public static void Main(string[] args)
         {
             log.Info("Starting {0} version utility...", Assembly.GetExecutingAssembly().GetName().Version);
-            ContainerBuilder builder = new ContainerBuilder();
+            var builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
             builder.RegisterModule<LoggingModule>();
             builder.RegisterModule<CommonModule>();
             builder.RegisterModule(new AlphaModule("Articles", "AAPL", "AMD", "GOOG", "AAPL"));
             builder.RegisterModule(
-                new RetrieverModule(new RetrieveConfguration
+                new RetrieverModule(new RetrieveConfiguration
                 {
                     LongRetryDelay = 60 * 20,
                     CallDelay = 30000,
@@ -45,11 +45,11 @@ namespace Wikiled.News.Monitoring.TestApp
                     MaxConcurrent = 1
                 }));
 
-            IContainer container = builder.Build();
-            ILoggerFactory loggerFactory = container.Resolve<ILoggerFactory>();
+            var container = builder.Build();
+            var loggerFactory = container.Resolve<ILoggerFactory>();
             loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
 
-            IArticlesMonitor monitor = container.Resolve<IArticlesMonitor>();
+            var monitor = container.Resolve<IArticlesMonitor>();
             "Articles".EnsureDirectoryExistence();
             var persistency = container.Resolve<IArticlesPersistency>();
             monitor.Start().Subscribe(item => persistency.Save(item));

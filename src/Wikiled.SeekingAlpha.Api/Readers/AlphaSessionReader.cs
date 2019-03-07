@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
-namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
+namespace Wikiled.SeekingAlpha.Api.Readers
 {
     public class AlphaSessionReader : ISessionReader
     {
@@ -23,9 +24,9 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
 
         private readonly SemaphoreSlim calls = new SemaphoreSlim(1);
 
-        private readonly RetrieveConfguration httpConfiguration;
+        private readonly RetrieveConfiguration httpConfiguration;
 
-        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader, RetrieveConfguration httpConfiguration)
+        public AlphaSessionReader(ILoggerFactory loggerFactory, IApplicationConfiguration configuration, ITrackedRetrieval reader, RetrieveConfiguration httpConfiguration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
@@ -34,14 +35,14 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             logger = loggerFactory.CreateLogger<AlphaSessionReader>();
         }
 
-        public Task<CommentData[]> ReadComments(ArticleDefinition article)
+        public Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token)
         {
             return Caller(async () => await new AlphaCommentsReader(loggerFactory, article, reader).ReadAllComments().ToArray());
         }
 
-        public Task<ArticleText> ReadArticle(ArticleDefinition article)
+        public Task<ArticleText> ReadArticle(ArticleDefinition article, CancellationToken token)
         {
-            return Caller(() => new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article));
+            return Caller(() => new AlphaArticleTextReader(loggerFactory, reader).ReadArticle(article, token));
         }
 
         private async Task<T> Caller<T>(Func<Task<T>> logic)
@@ -67,7 +68,7 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             }
         }
 
-        public async Task Init()
+        public async Task Init(CancellationToken token)
         {
             if (initialized)
             {
@@ -75,12 +76,12 @@ namespace Wikiled.News.Monitoring.Readers.SeekingAlpha
             }
 
             initialized = true;
-            string email = configuration.GetEnvironmentVariable("ALPHA_EMAIL");
+            var email = configuration.GetEnvironmentVariable("ALPHA_EMAIL");
             email = System.Web.HttpUtility.UrlEncode(email);
-            string pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
+            var pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
             pass = System.Web.HttpUtility.UrlEncode(pass);
-            string loginData = $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
-            await reader.Authenticate(new Uri("https://seekingalpha.com/authentication/login"), loginData, Constants.Ajax);
+            var loginData = $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
+            await reader.Authenticate(new Uri("https://seekingalpha.com/authentication/login"), loginData, token, Constants.Ajax).ConfigureAwait(false);
         }
     }
 }
