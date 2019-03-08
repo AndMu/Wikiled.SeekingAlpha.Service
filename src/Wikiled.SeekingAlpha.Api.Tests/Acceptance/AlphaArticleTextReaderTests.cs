@@ -11,9 +11,9 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
         public async Task ReadArticle()
         {
             var tokenSource = new CancellationTokenSource(1000);
-            var article = await Session.ReadArticle(Article, tokenSource.Token).ConfigureAwait(false);
-            Assert.AreEqual("Apple: Price Matters", article.Title);
-            Assert.AreEqual(6673, article.Text.Length);
+            var article = await Readers.Read(Article, tokenSource.Token).ConfigureAwait(false);
+            Assert.AreEqual("Apple: Price Matters", article.Definition.Title);
+            Assert.AreEqual(6673, article.ArticleText);
         }
     }
 }

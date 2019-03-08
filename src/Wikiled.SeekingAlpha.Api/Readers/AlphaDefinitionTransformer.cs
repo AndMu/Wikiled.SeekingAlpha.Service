@@ -9,7 +9,6 @@ namespace Wikiled.SeekingAlpha.Api.Readers
     {
         public ArticleDefinition Transform(ArticleDefinition definition)
         {
-            var original = definition.Id;
             definition.Id = Regex.Replace(definition.Id, "^.*:(.*)", "$1", RegexOptions.IgnoreCase);
             if (definition.Url.ToString().ToLower().Contains("news?"))
             {

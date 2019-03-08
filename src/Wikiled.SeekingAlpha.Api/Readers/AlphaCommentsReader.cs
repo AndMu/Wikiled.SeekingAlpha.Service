@@ -82,7 +82,7 @@ namespace Wikiled.SeekingAlpha.Api.Readers
                 result.Date = comment.Value.CreatedOn;
                 result.Id = comment.Value?.Id.ToString();
                 result.Text = comment.Value.Content;
-                result.Vote = comment.Value.Likes;
+                result.Positive = comment.Value.Likes;
                 yield return result;
                 foreach (var children in Read(comment.Value.Children))
                 {

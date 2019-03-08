@@ -5,9 +5,22 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="nlog.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="NLog" Version="4.5.11" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
     <PackageReference Include="NUnit" Version="3.11.0" />
     <packagereference Include="Microsoft.NET.Test.Sdk" Version="16.0.1"></packagereference>
     <packagereference Include="NUnit3TestAdapter" Version="3.13.0" />
@@ -19,7 +32,7 @@
     <PackageReference Include="Polly" Version="7.0.3" />
     <PackageReference Include="Wikiled.Common" Version="1.1.7" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Wikiled.News.Monitoring" Version="1.0.4" />
+    <PackageReference Include="Wikiled.News.Monitoring" Version="1.0.9" />
   </ItemGroup>
 
 

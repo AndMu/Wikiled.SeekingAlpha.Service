@@ -35,7 +35,7 @@ namespace Wikiled.SeekingAlpha.Api.Containers
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<ApplicationConfiguration>().As<IApplicationConfiguration>();
-            builder.RegisterType<AlphaSessionReader>().As<ISessionReader>().SingleInstance().OnActivating(async item => await item.Instance.Init(CancellationToken.None).ConfigureAwait(false));
+            builder.RegisterType<AlphaAuthentication>().As<IAuthentication>();
             builder.RegisterType<AlphaCommentsReader>().As<ICommentsReader>();
             builder.RegisterType<AlphaArticleTextReader>().As<IArticleTextReader>();
             builder.RegisterType<AlphaDefinitionTransformer>().As<IDefinitionTransformer>();
