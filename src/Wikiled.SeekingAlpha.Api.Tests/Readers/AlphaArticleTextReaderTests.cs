@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
@@ -16,8 +15,6 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Readers
     [TestFixture]
     public class AlphaArticleTextReaderTests
     {
-        private Mock<ILoggerFactory> mockLoggerFactory;
-
         private Mock<ITrackedRetrieval> mockHtmlReader;
 
         private AlphaArticleTextReader instance;
@@ -25,7 +22,6 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Readers
         [SetUp]
         public void SetUp()
         {
-            mockLoggerFactory = new Mock<ILoggerFactory>();
             mockHtmlReader = new Mock<ITrackedRetrieval>();
             var text = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "data", "data.html"));
             mockHtmlReader.Setup(item => item.Read(It.IsAny<Uri>(), CancellationToken.None, It.IsAny<Action<HttpWebRequest>>())).Returns(Task.FromResult(text));
@@ -50,13 +46,13 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Readers
                 null,
                 mockHtmlReader.Object));
             Assert.Throws<ArgumentNullException>(() => new AlphaArticleTextReader(
-                mockLoggerFactory.Object,
+                new NullLogger<AlphaArticleTextReader>(),
                 null));
         }
 
         private AlphaArticleTextReader CreateInstance()
         {
-            return new AlphaArticleTextReader(new NullLoggerFactory(), mockHtmlReader.Object);
+            return new AlphaArticleTextReader(new NullLogger<AlphaArticleTextReader>(), mockHtmlReader.Object);
         }
     }
 }

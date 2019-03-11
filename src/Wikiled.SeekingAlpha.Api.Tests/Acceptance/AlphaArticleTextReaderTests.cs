@@ -10,10 +10,11 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
         [Test]
         public async Task ReadArticle()
         {
-            var tokenSource = new CancellationTokenSource(1000);
+            var tokenSource = new CancellationTokenSource(10000);
             var article = await Readers.Read(Article, tokenSource.Token).ConfigureAwait(false);
             Assert.AreEqual("Apple: Price Matters", article.Definition.Title);
             Assert.AreEqual(6673, article.ArticleText);
         }
     }
 }
+ 

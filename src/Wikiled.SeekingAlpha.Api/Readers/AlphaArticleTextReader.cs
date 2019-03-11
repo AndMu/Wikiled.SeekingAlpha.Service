@@ -16,10 +16,10 @@ namespace Wikiled.SeekingAlpha.Api.Readers
 
         private readonly ITrackedRetrieval reader;
 
-        public AlphaArticleTextReader(ILoggerFactory loggerFactory, ITrackedRetrieval reader)
+        public AlphaArticleTextReader(ILogger<AlphaArticleTextReader> logger, ITrackedRetrieval reader)
         {
-            logger = loggerFactory?.CreateLogger<AlphaArticleTextReader>() ?? throw new ArgumentNullException(nameof(logger));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<ArticleText> ReadArticle(ArticleDefinition definition, CancellationToken token)

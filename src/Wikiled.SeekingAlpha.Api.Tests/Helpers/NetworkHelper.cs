@@ -1,7 +1,5 @@
-﻿using System.Net;
-using Autofac;
-using Microsoft.Extensions.Logging;
-using Wikiled.Common.Logging;
+﻿using Autofac;
+using System.Net;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Retriever;
@@ -23,11 +21,11 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
             builder.RegisterModule(
                 new RetrieverModule(
                     new RetrieveConfiguration
-                {
-                    LongRetryDelay = 1000,
-                    CallDelay = 1000,
-                    LongRetryCodes = new[] { HttpStatusCode.Forbidden },
-                    RetryCodes = new[]
+                    {
+                        LongRetryDelay = 1000,
+                        CallDelay = 100,
+                        LongRetryCodes = new[] { HttpStatusCode.Forbidden },
+                        RetryCodes = new[]
                     {
                         HttpStatusCode.Forbidden,
                         HttpStatusCode.RequestTimeout, // 408
@@ -36,8 +34,8 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
                         HttpStatusCode.ServiceUnavailable, // 503
                         HttpStatusCode.GatewayTimeout // 504
                     },
-                    MaxConcurrent = 1
-                }));
+                        MaxConcurrent = 1
+                    }));
 
             builder.RegisterModule(new AlphaModule("Data", "AMD"));
             builder.RegisterModule(new LoggingModule());
@@ -45,7 +43,7 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
             Retrieval = Container.Resolve<ITrackedRetrieval>();
         }
 
-        public  IContainer Container { get; }
+        public IContainer Container { get; }
 
         public ITrackedRetrieval Retrieval { get; }
     }
