@@ -37,9 +37,9 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
             var article = new ArticleDefinition();
             article.Id = "4210510";
             article.Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters");
-            var tokenSource = new CancellationTokenSource(1000);
+            var tokenSource = new CancellationTokenSource(10000);
             var result = await instance.Read(article, tokenSource.Token).ConfigureAwait(false);
-            Assert.AreEqual(6673, result.ArticleText.Text.Length);
+            Assert.AreEqual(6673, result.Content.Text.Length);
             Assert.Greater(result.Comments.Length, 10);
         }
     }

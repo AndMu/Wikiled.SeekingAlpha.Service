@@ -43,7 +43,7 @@ namespace Wikiled.SeekingAlpha.Service.Logic.Tracking
                 {
                     logger.LogDebug("Tracking: {0}", article.Definition.Id);
                     var date = article.Definition.Date ?? DateTime.UtcNow;
-                    texts[article.Definition.Id] = (article.ArticleText.Text, rating => trackerArticle.AddRating(new RatingRecord(article.Definition.Id, date, rating)));
+                    texts[article.Definition.Id] = (article.Content.Text, rating => trackerArticle.AddRating(new RatingRecord(article.Definition.Id, date, rating)));
                 }
 
                 logger.LogDebug("Total comments: {0}", article.Comments.Length);

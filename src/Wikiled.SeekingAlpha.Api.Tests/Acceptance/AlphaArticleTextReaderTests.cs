@@ -13,7 +13,7 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
             var tokenSource = new CancellationTokenSource(10000);
             var article = await Readers.Read(Article, tokenSource.Token).ConfigureAwait(false);
             Assert.AreEqual("Apple: Price Matters", article.Definition.Title);
-            Assert.AreEqual(6673, article.ArticleText);
+            Assert.AreEqual(6673, article.Content.Text.Length);
         }
     }
 }

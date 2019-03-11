@@ -22,7 +22,7 @@ namespace Wikiled.SeekingAlpha.Api.Readers
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<ArticleText> ReadArticle(ArticleDefinition definition, CancellationToken token)
+        public async Task<ArticleContent> ReadArticle(ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article text: {0}", definition.Id);
             var page = (await reader.Read(definition.Url, token).ConfigureAwait(false)).GetDocument();
@@ -38,7 +38,7 @@ namespace Wikiled.SeekingAlpha.Api.Readers
                 builder.Append(' ');
             }
 
-            return new ArticleText
+            return new ArticleContent
             {
                 Title = title.InnerText?.Trim(),
                 Text = builder.ToString()

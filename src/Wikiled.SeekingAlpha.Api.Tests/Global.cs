@@ -1,5 +1,4 @@
-﻿using System;
-using NLog;
+﻿using NLog;
 using NLog.Extensions.Logging;
 using NUnit.Framework;
 using Wikiled.Common.Logging;
