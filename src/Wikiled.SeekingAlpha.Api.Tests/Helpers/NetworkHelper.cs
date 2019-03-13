@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using System.Net;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Retriever;
@@ -6,17 +7,12 @@ using Wikiled.SeekingAlpha.Api.Containers;
 
 namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
 {
-    public class NetworkHelper
+    public class NetworkHelper : IDisposable
     {
-        public NetworkHelper(AlphaModule module = null)
+        public NetworkHelper()
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
-            if (module != null)
-            {
-                builder.RegisterModule(module);
-            }
-
             builder.RegisterModule(
                 new RetrieverModule(
                     new RetrieveConfiguration
@@ -44,5 +40,10 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
         public IContainer Container { get; }
 
         public ITrackedRetrieval Retrieval { get; }
+
+        public void Dispose()
+        {
+            Container?.Dispose();
+        }
     }
 }

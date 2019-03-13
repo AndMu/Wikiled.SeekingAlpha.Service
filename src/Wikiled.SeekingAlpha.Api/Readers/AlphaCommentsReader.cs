@@ -54,7 +54,7 @@ namespace Wikiled.SeekingAlpha.Api.Readers
 
                         if (total != comments.Total)
                         {
-                            logger.LogWarning("Total mistmatch. Expected: {0} and received: {1}", comments.Total, total);
+                            logger.LogWarning("Total mismatch. Expected: {0} and received: {1}", comments.Total, total);
                         }
 
                         observer.OnCompleted();

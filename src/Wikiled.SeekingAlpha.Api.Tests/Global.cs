@@ -17,5 +17,4 @@ namespace Wikiled.SeekingAlpha.Api.Tests
             log.Info("Starting");
         }
     }
-
 }

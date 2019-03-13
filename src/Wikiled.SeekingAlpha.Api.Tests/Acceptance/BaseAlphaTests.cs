@@ -32,7 +32,7 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
         [TearDown]
         public void TearDown()
         {
-            Helper.Container.Dispose();
+            Helper.Dispose();
         }
     }
 }
