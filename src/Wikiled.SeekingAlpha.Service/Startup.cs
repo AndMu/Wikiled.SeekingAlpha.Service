@@ -31,15 +31,6 @@ namespace Wikiled.SeekingAlpha.Service
             logger = loggerFactory.CreateLogger<Startup>();
         }
 
-        public override void Configure(IApplicationBuilder app,
-                                       IHostingEnvironment env,
-                                       IApplicationLifetime applicationLifetime)
-        {
-            base.Configure(app, env, applicationLifetime);
-            applicationLifetime.ApplicationStopping.Register(OnShutdown, disposable);
-        }
-
-
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
             config = services.RegisterConfiguration<MonitorConfig>(Configuration.GetSection("Monitor"));
@@ -47,9 +38,9 @@ namespace Wikiled.SeekingAlpha.Service
             return base.ConfigureServices(services);
         }
 
-        private void OnShutdown(object toDispose)
+        protected override void OnShutdown()
         {
-            ((IDisposable)toDispose).Dispose();
+            disposable.Dispose();
         }
 
         protected override void ConfigureSpecific(ContainerBuilder builder)
@@ -61,22 +52,22 @@ namespace Wikiled.SeekingAlpha.Service
                 {
                     logger.LogInformation("Starting monitoring");
                     var initial = item.Context.Resolve<IArticlesMonitor>()
-                        .Start()
+                        .NewArticles()
                         .Select(item.Instance.Save)
                         .Merge()
                         .Subscribe();
                     disposable.Add(initial);
 
                     var monitorArticles = item.Context.Resolve<IArticlesMonitor>()
-                        .Monitor()
+                        .MonitorUpdates()
                         .Select(item.Instance.Save)
                         .Merge()
                         .Subscribe();
                     disposable.Add(monitorArticles);
                 });
-            builder.RegisterModule<MainModule>();
+            builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule(new AlphaModule(config.Location, config.Stocks));
-            builder.RegisterModule(new RetrieverModule(config.Service));
+            builder.RegisterModule(new NewsRetrieverModule(config.Service));
         }
 
         protected override string GetPersistencyLocation()

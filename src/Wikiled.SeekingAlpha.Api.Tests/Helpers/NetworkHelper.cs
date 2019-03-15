@@ -1,6 +1,7 @@
 ﻿using System;
 using Autofac;
 using System.Net;
+using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Retriever;
 using Wikiled.SeekingAlpha.Api.Containers;
@@ -12,9 +13,10 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
         public NetworkHelper()
         {
             var builder = new ContainerBuilder();
-            builder.RegisterModule<MainModule>();
+            builder.RegisterModule<LoggingModule>();
+            builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule(
-                new RetrieverModule(
+                new NewsRetrieverModule(
                     new RetrieveConfiguration
                     {
                         LongRetryDelay = 1000,

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Fizzler.Systems.HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Data;
+using Wikiled.News.Monitoring.Extensions;
 using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 

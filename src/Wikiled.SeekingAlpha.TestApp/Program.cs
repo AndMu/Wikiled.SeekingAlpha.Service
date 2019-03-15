@@ -23,12 +23,12 @@ namespace Wikiled.SeekingAlpha.TestApp
         {
             log.Info("Starting {0} version utility...", Assembly.GetExecutingAssembly().GetName().Version);
             var builder = new ContainerBuilder();
-            builder.RegisterModule<MainModule>();
+            builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule<LoggingModule>();
             builder.RegisterModule<CommonModule>();
             builder.RegisterModule(new AlphaModule("Articles", "AAPL", "AMD", "GOOG", "AAPL"));
             builder.RegisterModule(
-                new RetrieverModule(new RetrieveConfiguration
+                new NewsRetrieverModule(new RetrieveConfiguration
                 {
                     LongRetryDelay = 60 * 20,
                     CallDelay = 30000,
@@ -52,8 +52,8 @@ namespace Wikiled.SeekingAlpha.TestApp
             var monitor = container.Resolve<IArticlesMonitor>();
             "Articles".EnsureDirectoryExistence();
             var persistency = container.Resolve<IArticlesPersistency>();
-            monitor.Start().Subscribe(item => persistency.Save(item));
-            monitor.Monitor().Subscribe(item => persistency.Save(item));
+            monitor.NewArticles().Subscribe(item => persistency.Save(item));
+            monitor.MonitorUpdates().Subscribe(item => persistency.Save(item));
             Console.ReadLine();
         }
     }
