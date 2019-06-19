@@ -21,7 +21,7 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
                     {
                         LongDelay = 60000,
                         ShortDelay = 1000,
-                        CallDelay = 1000,
+                        CallDelay = 10000,
                         LongRetryCodes = new[] {HttpStatusCode.Forbidden},
                         RetryCodes = new[]
                                      {

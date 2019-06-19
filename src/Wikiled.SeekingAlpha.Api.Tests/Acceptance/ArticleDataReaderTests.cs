@@ -37,7 +37,7 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Acceptance
                 Id = "4210510",
                 Url = new Uri("https://seekingalpha.com/article/4210510-apple-price-matters")
             };
-            var tokenSource = new CancellationTokenSource(10000);
+            var tokenSource = new CancellationTokenSource(100000);
             Article result = await instance.Read(article, tokenSource.Token).ConfigureAwait(false);
             Assert.AreEqual(6673, result.Content.Text.Length);
             Assert.Greater(result.Comments.Length, 10);
