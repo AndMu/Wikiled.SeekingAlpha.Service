@@ -30,7 +30,8 @@ namespace Wikiled.SeekingAlpha.Api.Readers
             email = System.Web.HttpUtility.UrlEncode(email);
             var pass = configuration.GetEnvironmentVariable("ALPHA_PASS");
             pass = System.Web.HttpUtility.UrlEncode(pass);
-            var loginData = $"id=headtabs_login&activity=footer_login&function=FooterBar.Login&user%5Bemail%5D={email}&user%5Bpassword%5D={pass}";
+            logger.LogInformation("Using {0} login", email);
+            var loginData = $"user%5Bemail%5D={email}&user%5Bpassword%5D={pass}&id=headtabs_login&activity=footer_login&function=onLoginSuccess";
             reader.ResetCookies();
             await reader.Post(new Uri("https://seekingalpha.com/authentication/login"), loginData, token, Constants.Ajax).ConfigureAwait(false);
             return true;

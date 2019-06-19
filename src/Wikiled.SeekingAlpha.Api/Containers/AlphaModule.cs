@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading;
-using Autofac;
+﻿using Autofac;
 using Microsoft.Extensions.Logging;
-using Wikiled.Common.Utilities.Auth;
+using System;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Persistency;
