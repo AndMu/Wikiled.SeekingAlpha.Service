@@ -30,7 +30,7 @@ namespace Wikiled.SeekingAlpha.TestApp
             builder.RegisterModule(
                 new NewsRetrieverModule(new RetrieveConfiguration
                 {
-                    LongRetryDelay = 60 * 20,
+                    LongDelay = 60 * 20,
                     CallDelay = 30000,
                     LongRetryCodes = new[] { HttpStatusCode.Forbidden, },
                     RetryCodes = new[]

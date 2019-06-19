@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" version="4.6.3" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
+    <PackageReference Include="NLog" version="4.6.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.5.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Autofac" Version="4.9.2" />
-    <PackageReference Include="Wikiled.News.Monitoring" Version="1.0.25" />
+    <PackageReference Include="Wikiled.News.Monitoring" Version="1.0.28" />
   </ItemGroup>
 
   <ItemGroup>

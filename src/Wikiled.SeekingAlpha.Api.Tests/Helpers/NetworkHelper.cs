@@ -19,8 +19,9 @@ namespace Wikiled.SeekingAlpha.Api.Tests.Helpers
                 new NewsRetrieverModule(
                     new RetrieveConfiguration
                     {
-                        LongRetryDelay = 1000,
-                        CallDelay = 100,
+                        LongDelay = 60000,
+                        ShortDelay = 1000,
+                        CallDelay = 1000,
                         LongRetryCodes = new[] {HttpStatusCode.Forbidden},
                         RetryCodes = new[]
                                      {
